@@ -5,9 +5,13 @@ import json
 from datetime import datetime
 import logging
 import requests
-#from six.moves import urllib
+import jwt
+from jwt.exceptions import DecodeError
 from sapjwt import jwtValidation
 from sap.xssec import constants
+from sap.xssec.exceptions import ValidationError
+from sap.xssec.key_cache import KeyCache
+
 
 def _check_if_valid(item, name):
     if item is None:
@@ -18,7 +22,7 @@ def _check_if_valid(item, name):
 
 def _check_config(config):
     _check_if_valid(config, 'config')
-    for prop in ['clientid', 'clientsecret', 'url', 'verificationkey']:
+    for prop in ['clientid', 'clientsecret', 'url']:
         item = None
         if prop in config:
             item = config[prop]
@@ -27,6 +31,8 @@ def _check_config(config):
 
 class SecurityContext(object):
     ''' SecurityContext class '''
+
+    verificationKeyCache = KeyCache()
 
     def __init__(self, token, config):
         _check_if_valid(token, 'token')
@@ -41,6 +47,7 @@ class SecurityContext(object):
     def _init_properties(self):
         self._init_xsappname()
         self._set_properties_defaults()
+        self._set_token_properties()
         self._offline_validation()
 
     def _init_xsappname(self):
@@ -66,6 +73,23 @@ class SecurityContext(object):
                                      ' the manifest.yml (legacy) as well as in xs-security.json.'
                                      ' Remove it in manifest.yml.')
 
+    def _set_token_properties(self):
+
+        def __set_property(decoded, json_key):
+            prop = decoded.get(json_key, None)
+            if not prop:
+                raise ValueError("Provided token does not contain '{}' property".format(json_key))
+            self._properties[json_key] = prop
+
+        try:
+            decoded = jwt.get_unverified_header(self._token)
+            print decoded
+        except DecodeError:
+            raise ValueError("Failed to decode provided token")
+
+        __set_property(decoded, "jku")
+        __set_property(decoded, "kid")
+
     def _set_properties_defaults(self):
         self._properties['is_foreign_mode'] = False
         self._properties['user_info'] = {
@@ -85,28 +109,29 @@ class SecurityContext(object):
         self._properties['grant_type'] = None
         self._properties['origin'] = None
         self._properties['expiration_date'] = None
+        self._properties['jku'] = None
 
-    def _get_jwt_payload(self):
+    def _get_jwt_payload(self, verification_key):
         self._logger.debug('SSO library path: %s, CCL library path: %s',
                            environ.get('SSOEXT_LIB'), environ.get('SSF_LIB'))
 
         result_code = self._jwt_validator.loadPEM(
-            self._config['verificationkey'])
+            verification_key)
         if result_code != 0:
-            raise RuntimeError(
+            raise ValidationError(
                 'Invalid verification key, result code {0}'.format(result_code))
 
         self._jwt_validator.checkToken(self._token)
         error_description = self._jwt_validator.getErrorDescription()
         if error_description != '':
-            raise RuntimeError(
+            raise ValidationError(
                 'Error in offline validation of access token: {0}, result code {1}'.format(
                     error_description, self._jwt_validator.getErrorRC()))
 
         jwt_payload = json.loads(self._jwt_validator.getJWPayload())
         for id_type in ['cid', 'zid']:
             if not id_type in jwt_payload:
-                raise RuntimeError(
+                raise ValidationError(
                     '{0} not contained in access token.'.format(id_type))
 
         return jwt_payload
@@ -245,8 +270,24 @@ class SecurityContext(object):
         self._properties['scopes'] = jwt_payload.get('scope') or []
         self._logger.debug('Obtained scopes: %s.', self._properties['scopes'])
 
+    def _validate_token(self):
+        """ First try validation with verification key retrieved from uaa if it fails try with configured key."""
+        verification_key = SecurityContext.verificationKeyCache.load_key(self._properties['jku'], self._properties['kid'])
+
+        try:
+            jwt_payload = self._get_jwt_payload(verification_key)
+        except ValidationError:
+            if 'verificationkey' in self._config:
+                self._logger.warning("Validation with verification key retrieved from uaa failed."
+                                     " Retry with configured key.")
+                jwt_payload = self._get_jwt_payload(self._config["verificationkey"])
+            else:
+                raise
+
+        return jwt_payload
+
     def _offline_validation(self):
-        jwt_payload = self._get_jwt_payload()
+        jwt_payload = self._validate_token()
         self._set_foreign_mode(jwt_payload)
         self._set_grant_type(jwt_payload)
         self._set_origin(jwt_payload)
