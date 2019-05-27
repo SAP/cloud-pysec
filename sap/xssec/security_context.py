@@ -6,6 +6,8 @@ from datetime import datetime
 import logging
 import requests
 import jwt
+from urlparse import urlparse
+
 from jwt.exceptions import DecodeError
 from sapjwt import jwtValidation
 from sap.xssec import constants
@@ -71,6 +73,19 @@ class SecurityContext(object):
                                      ' The application name is defined with different values in'
                                      ' the manifest.yml (legacy) as well as in xs-security.json.'
                                      ' Remove it in manifest.yml.')
+
+    def _validate_jku(self):
+        # uaa domain configured in VCAP_SERVICES must be part of jku in order to trust jku
+        xsuaa = json.loads(environ.get('VCAP_SERVICES', '{}')).get('xsuaa', [])
+        if len(xsuaa) == 0 or 'uaadomain' not in xsuaa[0]:
+            raise RuntimeError("uaadomain is not properly configured in 'VCAP_SERVICES'")
+        else:
+            uaa_domain = xsuaa[0]['uaadomain']
+
+        jku_url = urlparse(self._properties['jku'])
+        if not jku_url.hostname.endswith(uaa_domain):
+            self._logger.error("Error: Do not trust jku '{}' because it does not match uaa domain".format(self._properties['jku']))
+            raise RuntimeError("JKU of token is not trusted")
 
     def _set_token_properties(self):
 
@@ -275,6 +290,7 @@ class SecurityContext(object):
             self._logger.debug("Validate token with configured verifcation key")
             jwt_payload = self._get_jwt_payload(self._config["verificationkey"])
         else:
+            self._validate_jku()
             verification_key = SecurityContext.verificationKeyCache.load_key(self._properties['jku'], self._properties['kid'])
             jwt_payload = self._get_jwt_payload(verification_key)
 
