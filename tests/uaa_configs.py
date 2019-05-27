@@ -25,14 +25,6 @@ INVALID = {
         'identityzone': 'test-idz',
         'tags': ['xsuaa_clientsecret_undefined']
     },
-    'uaa_verificationkey_undefined': {
-        'url': 'http://sap-login-test.cfapps.neo.ondemand.com',
-        'clientid': 'xs2.node',
-        'clientsecret': 'nodeclientsecret',
-        'xsappname': 'node_unittest_app',
-        'identityzone': 'test-idz',
-        'tags': ['xsuaa_clientsecret_undefined']
-    },
     'uaa_xsappname_undefined': {
         'url': 'http://sap-login-test.cfapps.neo.ondemand.com',
         'clientid': 'xs2.node',
@@ -155,5 +147,15 @@ VALID = {
                         'FUBiZx5SOMxvS2nqwwDzK6sqX2Hx2i2\nadgJjtIqgA==',
         'url': 'http://paas.localhost:8080/uaa-security',
         'tags': ['xsuaa_application_plan']
+    },
+    'uaa_no_verification_key': {
+        'clientid': 'sb-xssectest',
+        'xsappname': 'uaa',
+        'identityzone': 'test-idz-name',
+        'identityzoneid': 'test-idz',
+        'clientsecret': 'z431EZmJWiuA/yINKXGewGR/wo99JKiVKAzG7yRyUHld'
+                        'IFUBiZx5SOMxvS2nqwwDzK6sqX2Hx2i2\nadgJjtIqgA==',
+        'url': 'https://lu356076.dhcp.wdf.sap.corp:30332/uaa-security',
+        'tags': ['xsuaa']
     }
 }

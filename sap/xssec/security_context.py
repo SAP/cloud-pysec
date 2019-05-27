@@ -9,7 +9,6 @@ import jwt
 from jwt.exceptions import DecodeError
 from sapjwt import jwtValidation
 from sap.xssec import constants
-from sap.xssec.exceptions import ValidationError
 from sap.xssec.key_cache import KeyCache
 
 
@@ -75,7 +74,7 @@ class SecurityContext(object):
 
     def _set_token_properties(self):
 
-        def __set_property(decoded, json_key):
+        def set_property(json_key):
             prop = decoded.get(json_key, None)
             if not prop:
                 raise ValueError("Provided token does not contain '{}' property".format(json_key))
@@ -83,12 +82,11 @@ class SecurityContext(object):
 
         try:
             decoded = jwt.get_unverified_header(self._token)
-            print decoded
         except DecodeError:
             raise ValueError("Failed to decode provided token")
 
-        __set_property(decoded, "jku")
-        __set_property(decoded, "kid")
+        set_property("jku")
+        set_property("kid")
 
     def _set_properties_defaults(self):
         self._properties['is_foreign_mode'] = False
@@ -118,20 +116,20 @@ class SecurityContext(object):
         result_code = self._jwt_validator.loadPEM(
             verification_key)
         if result_code != 0:
-            raise ValidationError(
+            raise RuntimeError(
                 'Invalid verification key, result code {0}'.format(result_code))
 
         self._jwt_validator.checkToken(self._token)
         error_description = self._jwt_validator.getErrorDescription()
         if error_description != '':
-            raise ValidationError(
+            raise RuntimeError(
                 'Error in offline validation of access token: {0}, result code {1}'.format(
                     error_description, self._jwt_validator.getErrorRC()))
 
         jwt_payload = json.loads(self._jwt_validator.getJWPayload())
         for id_type in ['cid', 'zid']:
             if not id_type in jwt_payload:
-                raise ValidationError(
+                raise RuntimeError(
                     '{0} not contained in access token.'.format(id_type))
 
         return jwt_payload
@@ -271,18 +269,14 @@ class SecurityContext(object):
         self._logger.debug('Obtained scopes: %s.', self._properties['scopes'])
 
     def _validate_token(self):
-        """ First try validation with verification key retrieved from uaa if it fails try with configured key."""
-        verification_key = SecurityContext.verificationKeyCache.load_key(self._properties['jku'], self._properties['kid'])
+        """ If verification key is configured use the configured key, otherwise retrieve key from uaa."""
 
-        try:
+        if "verificationkey" in self._config:
+            self._logger.debug("Validate token with configured verifcation key")
+            jwt_payload = self._get_jwt_payload(self._config["verificationkey"])
+        else:
+            verification_key = SecurityContext.verificationKeyCache.load_key(self._properties['jku'], self._properties['kid'])
             jwt_payload = self._get_jwt_payload(verification_key)
-        except ValidationError:
-            if 'verificationkey' in self._config:
-                self._logger.warning("Validation with verification key retrieved from uaa failed."
-                                     " Retry with configured key.")
-                jwt_payload = self._get_jwt_payload(self._config["verificationkey"])
-            else:
-                raise
 
         return jwt_payload
 

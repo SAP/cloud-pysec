@@ -2,3 +2,4 @@ flask
 coverage
 tox
 pylint
+mock
