@@ -11,9 +11,7 @@ to the OAuth server for authorization.
 The OAuth resource server validates the token using online or offline validation.
 For this validation libraries like sap_xssec are used.
 
-
 ![alt text](https://raw.githubusercontent.com/SAP/cloud-security-xsuaa-integration/1.4.0/images/oauth.png "OAuth authorization code flow")
-
 
 ### Usage
 
