@@ -5,12 +5,10 @@ import json
 from datetime import datetime
 import logging
 import requests
-import jwt
 from urlparse import urlparse
 
-from jwt.exceptions import DecodeError
-from sapjwt import jwtValidation
 from sap.xssec import constants
+from sap.xssec.jwt_validation_facade import JwtValidationFacade, DecodeError
 from sap.xssec.key_cache import KeyCache
 
 
@@ -40,7 +38,7 @@ class SecurityContext(object):
         self._token = token
         _check_config(config)
         self._config = config
-        self._jwt_validator = jwtValidation()
+        self._jwt_validator = JwtValidationFacade()
         self._logger = logging.getLogger(__name__)
         self._properties = {}
         self._init_properties()
@@ -80,7 +78,7 @@ class SecurityContext(object):
         uaa_domain = None
 
         try:
-            client_id = jwt.decode(self._token, verify=False).get('client_id')
+            client_id = self._jwt_validator.decode(self._token, verify=False).get('client_id')
         except DecodeError:
             raise ValueError("Failed to decode provided token")
 
@@ -106,7 +104,7 @@ class SecurityContext(object):
             self._properties[json_key] = prop
 
         try:
-            decoded = jwt.get_unverified_header(self._token)
+            decoded = self._jwt_validator.get_unverified_header(self._token)
         except DecodeError:
             raise ValueError("Failed to decode provided token")
 
@@ -151,7 +149,7 @@ class SecurityContext(object):
                 'Error in offline validation of access token: {0}, result code {1}'.format(
                     error_description, self._jwt_validator.getErrorRC()))
 
-        jwt_payload = json.loads(self._jwt_validator.getJWPayload())
+        jwt_payload = self._jwt_validator.getJWPayload()
         for id_type in ['cid', 'zid']:
             if not id_type in jwt_payload:
                 raise RuntimeError(
