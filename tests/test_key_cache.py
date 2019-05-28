@@ -1,7 +1,10 @@
 from sap.xssec import constants
-from sap.xssec.key_cache import KeyCache, CacheEntry
-from mock import patch, MagicMock
+from sap.xssec.key_cache import KeyCache
 import unittest
+try:
+    from unittest.mock import MagicMock, patch
+except ImportError:
+    from mock import MagicMock, patch
 
 from tests.http_responses import *
 

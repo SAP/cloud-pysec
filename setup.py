@@ -1,5 +1,6 @@
 """ xssec setup """
 import codecs
+import sys
 from os import path
 from setuptools import setup, find_packages
 from sap.xssec.config import USE_SAP_PY_JWT
@@ -14,7 +15,7 @@ with open(path.join(CURRENT_DIR, 'version.txt'), 'r') as version_file:
 with codecs.open(README_LOCATION, 'r', 'utf-8') as readme_file:
     LONG_DESCRIPTION = readme_file.read()
 
-sap_py_jwt_dep = ""
+sap_py_jwt_dep = ''
 if USE_SAP_PY_JWT:
     sap_py_jwt_dep = 'sap_py_jwt>=1.1.1'
 
@@ -28,9 +29,10 @@ setup(
     data_files=[('.', ['version.txt', 'CHANGELOG.md'])],
     test_suite='tests',
     install_requires=[
-        'requests==2.20.0',
+        'requests==2.22.0',
         'six==1.11.0',
         'pyjwt==1.7.*',
+        'future',
         '{}'.format(sap_py_jwt_dep)
     ],
     long_description=LONG_DESCRIPTION,

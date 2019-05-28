@@ -3,7 +3,6 @@ import unittest
 import json
 from os import environ
 from datetime import datetime
-from mock import patch, MagicMock
 from parameterized import parameterized_class
 
 from sap import xssec
@@ -12,11 +11,22 @@ from tests import uaa_configs
 from tests import jwt_tokens
 from tests.http_responses import HTTP_SUCCESS
 
+try:
+    from importlib import reload
+    from unittest.mock import MagicMock, patch
+except ImportError:
+    from mock import MagicMock, patch
 
-@parameterized_class(('USE_SAP_PY_JWT',), [
-    (True,),
-    (False,)
-])
+# test with sap-jwt if installed
+TEST_PARAMETERS = [(False,),]
+try:
+    from sapjwt import jwtValidation
+    TEST_PARAMETERS.append((True,))
+except ImportError:
+    pass
+
+
+@parameterized_class(('USE_SAP_PY_JWT',), TEST_PARAMETERS)
 class XSSECTest(unittest.TestCase):
 
     @classmethod
