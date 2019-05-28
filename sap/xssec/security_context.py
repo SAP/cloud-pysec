@@ -77,10 +77,20 @@ class SecurityContext(object):
     def _validate_jku(self):
         # uaa domain configured in VCAP_SERVICES must be part of jku in order to trust jku
         xsuaa = json.loads(environ.get('VCAP_SERVICES', '{}')).get('xsuaa', [])
-        if len(xsuaa) == 0 or 'uaadomain' not in xsuaa[0]:
-            raise RuntimeError("uaadomain is not properly configured in 'VCAP_SERVICES'")
-        else:
-            uaa_domain = xsuaa[0]['uaadomain']
+        uaa_domain = None
+
+        try:
+            client_id = jwt.decode(self._token, verify=False).get('client_id')
+        except DecodeError:
+            raise ValueError("Failed to decode provided token")
+
+        for entry in xsuaa:
+            if entry.get('clientid') == client_id:
+                uaa_domain = entry.get('uaadomain')
+                break
+
+        if not uaa_domain:
+            raise RuntimeError("Service is not properly configured in 'VCAP_SERVICES'")
 
         jku_url = urlparse(self._properties['jku'])
         if not jku_url.hostname.endswith(uaa_domain):
