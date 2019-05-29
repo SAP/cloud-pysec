@@ -1,11 +1,14 @@
 # pylint: disable=too-many-public-methods
 """ Security Context class """
+from future.standard_library import install_aliases
+install_aliases()
+
 from os import environ
 import json
 from datetime import datetime
 import logging
 import requests
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 from sap.xssec import constants
 from sap.xssec.jwt_validation_facade import JwtValidationFacade, DecodeError
