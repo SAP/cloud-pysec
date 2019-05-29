@@ -5,7 +5,7 @@ from sap.xssec.config import USE_SAP_PY_JWT
 if USE_SAP_PY_JWT:
     from sapjwt import jwtValidation
 
-ALGORITHMS = ['RS256', 'HS256']
+ALGORITHMS = ['RS256']
 OPTIONS = {
     'verify_aud': False
 }

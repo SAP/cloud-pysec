@@ -32,6 +32,7 @@ class XSSECTest(unittest.TestCase):
         # reloads needed to propagate changes to USE_SAP_PY_JWT
         reload(jwt_validation_facade)
         reload(security_context)
+        jwt_validation_facade.ALGORITHMS = ['RS256', 'HS256']
 
     def _check_invalid_params(self, token, uaa, message):
         with self.assertRaises(ValueError) as ctx:
