@@ -1,6 +1,5 @@
 """ xssec setup """
 import codecs
-import sys
 from os import path
 from setuptools import setup, find_packages
 from sap.xssec.config import USE_SAP_PY_JWT
@@ -32,7 +31,6 @@ setup(
         'requests==2.22.0',
         'six==1.11.0',
         'pyjwt==1.7.*',
-        'future',
         '{}'.format(sap_py_jwt_dep)
     ],
     long_description=LONG_DESCRIPTION,
