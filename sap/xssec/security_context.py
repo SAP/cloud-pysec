@@ -21,7 +21,7 @@ def _check_if_valid(item, name):
 
 def _check_config(config):
     _check_if_valid(config, 'config')
-    for prop in ['clientid', 'clientsecret', 'url']:
+    for prop in ['clientid', 'clientsecret', 'url', 'uaadomain']:
         item = None
         if prop in config:
             item = config[prop]
@@ -73,19 +73,8 @@ class SecurityContext(object):
                                      ' Remove it in manifest.yml.')
 
     def _validate_jku(self):
-        # uaa domain configured in VCAP_SERVICES must be part of jku in order to trust jku
-        xsuaa = json.loads(environ.get('VCAP_SERVICES', '{}')).get('xsuaa', [])
-        uaa_domain = None
-
-        try:
-            client_id = self._jwt_validator.decode(self._token, verify=False).get('client_id')
-        except DecodeError:
-            raise ValueError("Failed to decode provided token")
-
-        for entry in xsuaa:
-            if entry.get('clientid') == client_id:
-                uaa_domain = entry.get('uaadomain')
-                break
+        # configured uaa domain must be part of jku in order to trust jku
+        uaa_domain = self._config['uaadomain']
 
         if not uaa_domain:
             raise RuntimeError("Service is not properly configured in 'VCAP_SERVICES'")
@@ -99,8 +88,6 @@ class SecurityContext(object):
 
         def set_property(json_key):
             prop = decoded.get(json_key, None)
-            if not prop:
-                raise ValueError("Provided token does not contain '{}' property".format(json_key))
             self._properties[json_key] = prop
 
         try:
@@ -131,6 +118,8 @@ class SecurityContext(object):
         self._properties['origin'] = None
         self._properties['expiration_date'] = None
         self._properties['jku'] = None
+        self._properties['kid'] = None
+        self._properties['uaadomain'] = None
 
     def _get_jwt_payload(self, verification_key):
         self._logger.debug('SSO library path: %s, CCL library path: %s',
@@ -292,17 +281,22 @@ class SecurityContext(object):
         self._logger.debug('Obtained scopes: %s.', self._properties['scopes'])
 
     def _validate_token(self):
-        """ If verification key is configured use the configured key, otherwise retrieve key from uaa."""
+        """ Try to retrieve the key from the uaa if jku and kid is set. Otherwise use configured one."""
+
+        if self._properties['jku'] and self._properties['kid']:
+            self._validate_jku()
+            try:
+                verification_key = SecurityContext.verificationKeyCache.load_key(self._properties['jku'],
+                                                                                 self._properties['kid'])
+                return self._get_jwt_payload(verification_key)
+            except (DecodeError, RuntimeError, IOError) as e:
+                self._logger.warning("Warning: Could not validate key: {} Will retry with configured key.".format(e))
 
         if "verificationkey" in self._config:
             self._logger.debug("Validate token with configured verifcation key")
-            jwt_payload = self._get_jwt_payload(self._config["verificationkey"])
+            return self._get_jwt_payload(self._config["verificationkey"])
         else:
-            self._validate_jku()
-            verification_key = SecurityContext.verificationKeyCache.load_key(self._properties['jku'], self._properties['kid'])
-            jwt_payload = self._get_jwt_payload(verification_key)
-
-        return jwt_payload
+            raise RuntimeError("Cannot validate token without verificationkey")
 
     def _offline_validation(self):
         jwt_payload = self._validate_token()
