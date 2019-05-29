@@ -47,8 +47,8 @@ service instance.
 }
 
 ```
-If the `verificationkey` is not set, the key is requested from the uaa. Requested keys are cached for 15 minutes to avoid 
-extensive load on the uaa.
+If the `jku` and `kid` are set in the token, the key is requested from the uaa. As a fallback, the key configured in
+`uaa_service` is used. Requested keys are cached for 15 minutes to avoid extensive load on the uaa.
 
 The creation function `xssec.create_security_context` is to be used for an end-user token (e.g. for grant_type `password`
  or grant_type `authorization_code`) where user information is expected to be available within the token and thus within the security context.
