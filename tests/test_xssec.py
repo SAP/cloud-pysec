@@ -396,7 +396,6 @@ class XSSECTest(unittest.TestCase):
         mock = MagicMock()
         mock_requests.return_value = mock
         mock.json.return_value = HTTP_SUCCESS
-        environ['VCAP_SERVICES'] = '{"xsuaa":[{"uaadomain":"api.cf.test.com", "clientid":"sb-xssectest"}]}'
 
         sec_context = xssec.create_security_context(
             jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key'])
@@ -410,25 +409,8 @@ class XSSECTest(unittest.TestCase):
         mock_requests.assert_called_once_with("https://api.cf.test.com", timeout=constants.HTTP_TIMEOUT_IN_SECONDS)
 
     def test_not_trusted_jku(self):
-        environ['VCAP_SERVICES'] = '{"xsuaa":[{"uaadomain":"api.cf2.test.com", "clientid":"sb-xssectest"}]}'
 
         with self.assertRaises(RuntimeError) as e:
-            xssec.create_security_context(jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key'])
+            xssec.create_security_context(jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key_other_domain'])
 
         self.assertEqual("JKU of token is not trusted", str(e.exception),)
-
-    def test_vcap_services_invalid(self):
-        environ['VCAP_SERVICES'] = '{"xsuaa":[{"uaadomain":"api.cf2.test.com", "clientid":"sb-xssectest2"}]}'
-
-        with self.assertRaises(RuntimeError) as e:
-            xssec.create_security_context(jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key'])
-
-        self.assertEqual("Service is not properly configured in 'VCAP_SERVICES'", str(e.exception),)
-
-    def test_vcap_services_empty(self):
-        environ.pop('VCAP_SERVICES')
-
-        with self.assertRaises(RuntimeError) as e:
-            xssec.create_security_context(jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key'])
-
-        self.assertEqual("Service is not properly configured in 'VCAP_SERVICES'", str(e.exception),)
