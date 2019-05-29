@@ -37,6 +37,18 @@ security_context = xssec.create_security_context(access_token, uaa_service)
 
 **Note:** That the example above uses module [`cfenv`](https://pypi.python.org/pypi/cfenv) to retrieve the configuration of the uaa
 service instance.
+`uaa_service` is a dict that contains the necessary client information and looks like:
+```
+{
+    'clientid' : 'example_clientid'               // the id of the client
+    'clientsecret': 'example_clientsecret'        // the secret of the client
+    'url': 'example_url'                          // the url of the uaa
+    'verificationkey': 'example_verification key' // (optional) the key used for the verfication of the token
+}
+
+```
+If the `verificationkey` is not set, the key is requested from the uaa. Requested keys are cached for 15 minutes to avoid 
+extensive load on the uaa.
 
 The creation function `xssec.create_security_context` is to be used for an end-user token (e.g. for grant_type `password`
  or grant_type `authorization_code`) where user information is expected to be available within the token and thus within the security context.
@@ -98,10 +110,13 @@ If you want to enable another (foreign) application to use some of your applicat
 }
 ```
 
+# Configuration
+To configure whether the *sap-jwt* or the *py-jwt* library should be used for validation of the jwt token, 
+change the `use_sap_py_jwt` property in the `sap_xssec.ini` configuration file.
 
 
 # Requirements
-*sap_xssec* requires either *python 2.7* or *python 3.4*.
+*sap_xssec* requires either *python 2.7* or *python 3.7*.
 
 
 # Download and Installation
