@@ -51,7 +51,7 @@ class JwtValidationFacade(object):
                 self._error_desc = ''
                 self._error_code = 0
             except jwt.exceptions.InvalidTokenError as e:
-                self._error_desc = e.message
+                self._error_desc = str(e)
                 self._error_code = 1
 
     def getErrorDescription(self):
