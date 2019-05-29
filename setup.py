@@ -26,7 +26,7 @@ setup(
     author='SAP SE',
     description=('SAP Python Security Library'),
     packages=find_packages(include=['sap*']),
-    data_files=[('.', ['version.txt', 'CHANGELOG.md'])],
+    data_files=[('.', ['version.txt', 'CHANGELOG.md', 'sap_xssec.ini'])],
     test_suite='tests',
     install_requires=[
         'requests==2.22.0',
