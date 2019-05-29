@@ -3,9 +3,15 @@ import unittest
 import json
 from os import environ
 from datetime import datetime
+
+from sap.xssec import constants
+
 from sap import xssec
 from tests import uaa_configs
 from tests import jwt_tokens
+from mock import patch, MagicMock
+
+from tests.http_responses import HTTP_SUCCESS
 
 
 class XSSECTest(unittest.TestCase):
@@ -36,10 +42,10 @@ class XSSECTest(unittest.TestCase):
 
     def test_input_validation_invalid_token(self):
         ''' input validation: invalid token '''
-        with self.assertRaises(RuntimeError) as ctx:
+        with self.assertRaises(ValueError) as ctx:
             xssec.create_security_context('invalid', uaa_configs.VALID['uaa'])
         self.assertEqual(
-            'Error in offline validation of access token: Invalid JWT received, result code 5',
+            'Failed to decode provided token',
             str(ctx.exception))
 
     def test_input_validation_none_config(self):
@@ -65,13 +71,6 @@ class XSSECTest(unittest.TestCase):
             'valid',
             uaa_configs.INVALID['uaa_clientsecret_undefined'],
             '"config.clientsecret" should not be None')
-
-    def test_input_validation_invalid_config_verificationkey(self):
-        ''' input validation: invalid config verificationkey '''
-        self._check_invalid_params(
-            'valid',
-            uaa_configs.INVALID['uaa_verificationkey_undefined'],
-            '"config.verificationkey" should not be None')
 
     def test_input_validation_invalid_config_xsappname(self):
         ''' input validation: invalid config xsappname '''
@@ -372,3 +371,45 @@ class XSSECTest(unittest.TestCase):
             'Error in offline validation of access token:'
             ' JWT signature validation failed, result code 5',
             str(ctx.exception))
+
+    @patch('requests.get')
+    def test_get_verification_key_from_uaa(self, mock_requests):
+        mock = MagicMock()
+        mock_requests.return_value = mock
+        mock.json.return_value = HTTP_SUCCESS
+        environ['VCAP_SERVICES'] = '{"xsuaa":[{"uaadomain":"api.cf.test.com", "clientid":"sb-xssectest"}]}'
+
+        sec_context = xssec.create_security_context(
+            jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key'])
+        self._check_user_token(sec_context)
+        self.assertTrue(sec_context.has_attributes())
+        self.assertEqual(sec_context.get_attribute('country'), ['USA'])
+        self.assertEqual(
+            sec_context.get_clone_service_instance_id(), 'abcd1234')
+        self.assertEqual(
+            sec_context.get_additional_auth_attribute('external_group'), 'domaingroup1')
+        mock_requests.assert_called_once_with("https://api.cf.test.com", timeout=constants.HTTP_TIMEOUT_IN_SECONDS)
+
+    def test_not_trusted_jku(self):
+        environ['VCAP_SERVICES'] = '{"xsuaa":[{"uaadomain":"api.cf2.test.com", "clientid":"sb-xssectest"}]}'
+
+        with self.assertRaises(RuntimeError) as e:
+            xssec.create_security_context(jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key'])
+
+        self.assertEqual("JKU of token is not trusted", str(e.exception),)
+
+    def test_vcap_services_invalid(self):
+        environ['VCAP_SERVICES'] = '{"xsuaa":[{"uaadomain":"api.cf2.test.com", "clientid":"sb-xssectest2"}]}'
+
+        with self.assertRaises(RuntimeError) as e:
+            xssec.create_security_context(jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key'])
+
+        self.assertEqual("Service is not properly configured in 'VCAP_SERVICES'", str(e.exception),)
+
+    def test_vcap_services_empty(self):
+        environ.pop('VCAP_SERVICES')
+
+        with self.assertRaises(RuntimeError) as e:
+            xssec.create_security_context(jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key'])
+
+        self.assertEqual("Service is not properly configured in 'VCAP_SERVICES'", str(e.exception),)

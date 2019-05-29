@@ -5,9 +5,14 @@ import json
 from datetime import datetime
 import logging
 import requests
-#from six.moves import urllib
+import jwt
+from urlparse import urlparse
+
+from jwt.exceptions import DecodeError
 from sapjwt import jwtValidation
 from sap.xssec import constants
+from sap.xssec.key_cache import KeyCache
+
 
 def _check_if_valid(item, name):
     if item is None:
@@ -18,7 +23,7 @@ def _check_if_valid(item, name):
 
 def _check_config(config):
     _check_if_valid(config, 'config')
-    for prop in ['clientid', 'clientsecret', 'url', 'verificationkey']:
+    for prop in ['clientid', 'clientsecret', 'url']:
         item = None
         if prop in config:
             item = config[prop]
@@ -27,6 +32,8 @@ def _check_config(config):
 
 class SecurityContext(object):
     ''' SecurityContext class '''
+
+    verificationKeyCache = KeyCache()
 
     def __init__(self, token, config):
         _check_if_valid(token, 'token')
@@ -41,6 +48,7 @@ class SecurityContext(object):
     def _init_properties(self):
         self._init_xsappname()
         self._set_properties_defaults()
+        self._set_token_properties()
         self._offline_validation()
 
     def _init_xsappname(self):
@@ -66,6 +74,45 @@ class SecurityContext(object):
                                      ' the manifest.yml (legacy) as well as in xs-security.json.'
                                      ' Remove it in manifest.yml.')
 
+    def _validate_jku(self):
+        # uaa domain configured in VCAP_SERVICES must be part of jku in order to trust jku
+        xsuaa = json.loads(environ.get('VCAP_SERVICES', '{}')).get('xsuaa', [])
+        uaa_domain = None
+
+        try:
+            client_id = jwt.decode(self._token, verify=False).get('client_id')
+        except DecodeError:
+            raise ValueError("Failed to decode provided token")
+
+        for entry in xsuaa:
+            if entry.get('clientid') == client_id:
+                uaa_domain = entry.get('uaadomain')
+                break
+
+        if not uaa_domain:
+            raise RuntimeError("Service is not properly configured in 'VCAP_SERVICES'")
+
+        jku_url = urlparse(self._properties['jku'])
+        if not jku_url.hostname.endswith(uaa_domain):
+            self._logger.error("Error: Do not trust jku '{}' because it does not match uaa domain".format(self._properties['jku']))
+            raise RuntimeError("JKU of token is not trusted")
+
+    def _set_token_properties(self):
+
+        def set_property(json_key):
+            prop = decoded.get(json_key, None)
+            if not prop:
+                raise ValueError("Provided token does not contain '{}' property".format(json_key))
+            self._properties[json_key] = prop
+
+        try:
+            decoded = jwt.get_unverified_header(self._token)
+        except DecodeError:
+            raise ValueError("Failed to decode provided token")
+
+        set_property("jku")
+        set_property("kid")
+
     def _set_properties_defaults(self):
         self._properties['is_foreign_mode'] = False
         self._properties['user_info'] = {
@@ -85,13 +132,14 @@ class SecurityContext(object):
         self._properties['grant_type'] = None
         self._properties['origin'] = None
         self._properties['expiration_date'] = None
+        self._properties['jku'] = None
 
-    def _get_jwt_payload(self):
+    def _get_jwt_payload(self, verification_key):
         self._logger.debug('SSO library path: %s, CCL library path: %s',
                            environ.get('SSOEXT_LIB'), environ.get('SSF_LIB'))
 
         result_code = self._jwt_validator.loadPEM(
-            self._config['verificationkey'])
+            verification_key)
         if result_code != 0:
             raise RuntimeError(
                 'Invalid verification key, result code {0}'.format(result_code))
@@ -245,8 +293,21 @@ class SecurityContext(object):
         self._properties['scopes'] = jwt_payload.get('scope') or []
         self._logger.debug('Obtained scopes: %s.', self._properties['scopes'])
 
+    def _validate_token(self):
+        """ If verification key is configured use the configured key, otherwise retrieve key from uaa."""
+
+        if "verificationkey" in self._config:
+            self._logger.debug("Validate token with configured verifcation key")
+            jwt_payload = self._get_jwt_payload(self._config["verificationkey"])
+        else:
+            self._validate_jku()
+            verification_key = SecurityContext.verificationKeyCache.load_key(self._properties['jku'], self._properties['kid'])
+            jwt_payload = self._get_jwt_payload(verification_key)
+
+        return jwt_payload
+
     def _offline_validation(self):
-        jwt_payload = self._get_jwt_payload()
+        jwt_payload = self._validate_token()
         self._set_foreign_mode(jwt_payload)
         self._set_grant_type(jwt_payload)
         self._set_origin(jwt_payload)

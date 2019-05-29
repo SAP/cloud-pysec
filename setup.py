@@ -23,7 +23,8 @@ setup(
     install_requires=[
         'requests==2.20.0',
         'six==1.11.0',
-        'sap_py_jwt>=1.1.1'
+        'sap_py_jwt>=1.1.1',
+        'pyjwt==1.7.*',
     ],
     long_description=LONG_DESCRIPTION,
     classifiers=[
