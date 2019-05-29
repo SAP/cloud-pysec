@@ -4,6 +4,9 @@ from os import environ, path, devnull
 import socket
 from time import sleep
 from subprocess import Popen
+
+from sap.xssec import jwt_validation_facade
+
 from sap import xssec
 from tests import uaa_configs
 from tests import jwt_tokens
@@ -55,6 +58,8 @@ class ReqTokenForClientTest(unittest.TestCase):
                         'Test server could not start!')  # pylint: disable=superfluous-parens
                     raise e
         s.close()
+
+        jwt_validation_facade.ALGORITHMS = ['RS256', 'HS256']
 
     @classmethod
     def tearDownClass(cls):

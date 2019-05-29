@@ -3,17 +3,20 @@ import unittest
 import json
 from os import environ
 from datetime import datetime
-
-from sap.xssec import constants
+from mock import patch, MagicMock
+from parameterized import parameterized_class
 
 from sap import xssec
+from sap.xssec import constants, config, jwt_validation_facade, security_context
 from tests import uaa_configs
 from tests import jwt_tokens
-from mock import patch, MagicMock
-
 from tests.http_responses import HTTP_SUCCESS
 
 
+@parameterized_class(('USE_SAP_PY_JWT',), [
+    (True,),
+    (False,)
+])
 class XSSECTest(unittest.TestCase):
 
     @classmethod
@@ -24,6 +27,12 @@ class XSSECTest(unittest.TestCase):
     def setUp(self):
         if 'SAP_JWT_TRUST_ACL' in environ:
             del environ['SAP_JWT_TRUST_ACL']
+
+        config.USE_SAP_PY_JWT = self.USE_SAP_PY_JWT
+        # reloads needed to propagate changes to USE_SAP_PY_JWT
+        reload(jwt_validation_facade)
+        reload(security_context)
+        jwt_validation_facade.ALGORITHMS = ['RS256', 'HS256']
 
     def _check_invalid_params(self, token, uaa, message):
         with self.assertRaises(ValueError) as ctx:
@@ -155,9 +164,8 @@ class XSSECTest(unittest.TestCase):
         with self.assertRaises(RuntimeError) as ctx:
             xssec.create_security_context(
                 jwt_tokens.INVALID_SIGNATURE_END_USER_TOKEN, uaa_configs.VALID['uaa'])
-        self.assertEqual(
-            'Error in offline validation of access token: JWT signature'
-            ' validation failed, result code 5', str(ctx.exception))
+        self.assertTrue(
+            'Error in offline validation of access token:' in str(ctx.exception))
 
     def test_valid_end_user_token_in_foreign_mode_idz(self):
         ''' valid end-user token in foreign mode (idz - correct SAP_JWT_TRUST_ACL) '''
@@ -367,13 +375,14 @@ class XSSECTest(unittest.TestCase):
             xssec.create_security_context(
                 jwt_tokens.TOKEN_NEW_FORMAT,
                 uaa_configs.INVALID['uaa_verificationkey_invalid'])
-        self.assertEqual(
-            'Error in offline validation of access token:'
-            ' JWT signature validation failed, result code 5',
-            str(ctx.exception))
+        self.assertTrue(
+            'Error in offline validation of access token:' in str(ctx.exception))
 
     @patch('requests.get')
     def test_get_verification_key_from_uaa(self, mock_requests):
+        from sap.xssec.key_cache import KeyCache
+        xssec.SecurityContext.verificationKeyCache = KeyCache()
+
         mock = MagicMock()
         mock_requests.return_value = mock
         mock.json.return_value = HTTP_SUCCESS
