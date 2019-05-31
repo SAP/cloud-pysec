@@ -28,7 +28,7 @@ setup(
     data_files=[('.', ['version.txt', 'CHANGELOG.md', 'sap_xssec.ini'])],
     test_suite='tests',
     install_requires=[
-        'requests==2.22.0',
+        'requests>=2.21.0',
         'six==1.11.0',
         'pyjwt==1.7.*',
         '{}'.format(sap_py_jwt_dep)
