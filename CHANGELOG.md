@@ -5,7 +5,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## 2.0.3
+## 2.0.4
 
 ### Fixed
 - Dependecy for automatic pip install repaired
