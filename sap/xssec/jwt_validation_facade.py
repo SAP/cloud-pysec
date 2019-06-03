@@ -1,6 +1,6 @@
 import jwt
 import json
-from sap.xssec.config import USE_SAP_PY_JWT
+from sap.conf.config import USE_SAP_PY_JWT
 
 if USE_SAP_PY_JWT:
     from sapjwt import jwtValidation

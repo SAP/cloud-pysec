@@ -6,7 +6,8 @@ from datetime import datetime
 from parameterized import parameterized_class
 
 from sap import xssec
-from sap.xssec import constants, config, jwt_validation_facade, security_context
+from sap.xssec import constants, jwt_validation_facade, security_context
+from sap.conf import config
 from tests import uaa_configs
 from tests import jwt_tokens
 from tests.http_responses import HTTP_SUCCESS
