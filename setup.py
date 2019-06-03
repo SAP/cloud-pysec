@@ -2,7 +2,7 @@
 import codecs
 from os import path
 from setuptools import setup, find_packages
-from sap.xssec.config import USE_SAP_PY_JWT
+from sap.conf.config import USE_SAP_PY_JWT
 
 CURRENT_DIR = path.abspath(path.dirname(__file__))
 README_LOCATION = path.join(CURRENT_DIR, 'README.md')
