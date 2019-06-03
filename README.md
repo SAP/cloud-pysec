@@ -112,7 +112,7 @@ If you want to enable another (foreign) application to use some of your applicat
 
 # Configuration
 To configure whether the *sap-jwt* or the *py-jwt* library should be used for validation of the jwt token, 
-change the `use_sap_py_jwt` property in the `sap_xssec.ini` configuration file.
+change the `USE_SAP_PY_JWT` environment variable to `true`.
 
 
 # Requirements
