@@ -25,7 +25,7 @@ def _check_if_valid(item, name):
 
 def _check_config(config):
     _check_if_valid(config, 'config')
-    for prop in ['clientid', 'clientsecret', 'url', 'uaadomain']:
+    for prop in ['clientid', 'clientsecret', 'url']:
         item = None
         if prop in config:
             item = config[prop]
