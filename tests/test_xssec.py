@@ -415,3 +415,11 @@ class XSSECTest(unittest.TestCase):
             xssec.create_security_context(jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key_other_domain'])
 
         self.assertEqual("JKU of token is not trusted", str(e.exception),)
+
+    def test_valid_xsa_token_attributes(self):
+        ''' valid client credentials token (with attributes) '''
+        sec_context = xssec.create_security_context(
+            jwt_tokens.TOKEN_XSA_FORMAT,
+            uaa_configs.VALID['uaa_xsa_environment'])
+        self.assertEqual(
+            sec_context.get_logon_name(), 'ADMIN')

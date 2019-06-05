@@ -184,5 +184,16 @@ VALID = {
         'url': 'https://test.me/uaa',
         'tags': ['xsuaa'],
         'uaadomain': 'api.cf2.test.com'
+    },
+    'uaa_xsa_environment': {
+        'clientid': 'sb-xssectest',
+        'xsappname': 'uaa',
+        'identityzone': 'uaa',
+        'identityzoneid': 'uaa',
+        'clientsecret': 'z431EZmJWiuA/yINKXGewGR/wo99JKiVKAzG7yRyUHld'
+                        'IFUBiZx5SOMxvS2nqwwDzK6sqX2Hx2i2\nadgJjtIqgA==',
+        'url': 'http://localhost:8080/uaa',
+        'verificationkey': 'secret',
+        'tags': ['xsuaa']
     }
 }

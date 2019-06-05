@@ -287,7 +287,7 @@ class SecurityContext(object):
     def _validate_token(self):
         """ Try to retrieve the key from the uaa if jku and kid is set. Otherwise use configured one."""
 
-        if self._properties['jku'] and self._properties['kid']:
+        if "uaadomain" in self._config and self._properties['jku'] and self._properties['kid']:
             self._validate_jku()
             try:
                 verification_key = SecurityContext.verificationKeyCache.load_key(self._properties['jku'],
