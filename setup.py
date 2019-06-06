@@ -17,6 +17,8 @@ with codecs.open(README_LOCATION, 'r', 'utf-8') as readme_file:
 sap_py_jwt_dep = ''
 if USE_SAP_PY_JWT:
     sap_py_jwt_dep = 'sap_py_jwt>=1.1.1'
+else:
+    sap_py_jwt_dep = 'cryptography'
 
 setup(
     name='sap_xssec',
