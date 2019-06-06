@@ -423,3 +423,12 @@ class XSSECTest(unittest.TestCase):
             uaa_configs.VALID['uaa_xsa_environment'])
         self.assertEqual(
             sec_context.get_logon_name(), 'ADMIN')
+
+
+    def test_valid_xsa_token_with_newlines(self):
+        ''' valid client credentials token (with attributes) '''
+        sec_context = xssec.create_security_context(
+            jwt_tokens.TOKEN_XSA_FORMAT,
+            uaa_configs.VALID['uaa_xsa_with_newlines'])
+        self.assertEqual(
+            sec_context.get_logon_name(), 'ADMIN')
