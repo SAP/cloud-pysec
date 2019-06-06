@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 2.0.6
+
+### Fixed
+- Added cryptography dependeny for pyjwt
+
 ## 2.0.5
 
 ### Fixed
