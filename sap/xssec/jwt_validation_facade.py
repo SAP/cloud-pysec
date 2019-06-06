@@ -47,6 +47,8 @@ class JwtValidationFacade(object):
             self._validator.checkToken(token)
         else:
             try:
+                if "-----BEGIN PUBLIC KEY-----" in self._pem and '\n' not in self._pem:
+                    self._pem = self._pem.replace('-----BEGIN PUBLIC KEY-----', '-----BEGIN PUBLIC KEY-----\n').replace('-----END PUBLIC KEY-----','\n-----END PUBLIC KEY-----')
                 self._payload = jwt.decode(token, self._pem, algorithms=ALGORITHMS, options=OPTIONS)
                 self._error_desc = ''
                 self._error_code = 0
