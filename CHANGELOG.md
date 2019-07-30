@@ -5,6 +5,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 2.0.7
+### Changed
+- Use sap_py_jwt as default library for decoding
+
+### Added
+- Implement resilience: add retry for key retrieval
+
 ## 2.0.6
 
 ### Fixed

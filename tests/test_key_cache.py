@@ -1,3 +1,5 @@
+from requests import Timeout, HTTPError, Response
+
 from sap.xssec import constants
 from sap.xssec.key_cache import KeyCache
 import unittest
@@ -164,6 +166,41 @@ class CacheTest(unittest.TestCase):
 
     def assert_key_equal(self, key1, key2):
         self.assertEqual(strip_white_space(key1), strip_white_space(key2))
+
+    def test_timeout_retry(self, mock_requests, mock_time):
+        mock_requests.side_effect = [Timeout(), self.mock]
+        self.mock.json.return_value = HTTP_SUCCESS
+
+        key = self.cache.load_key("jku1", "key-id-1")
+
+        self.assert_key_equal(KEY_ID_1, key)
+        self.assertEqual(2, mock_requests.call_count)
+
+    def test_timeout_retry_max(self, mock_requests, mock_time):
+        mock_requests.side_effect = [Timeout(), Timeout(), Timeout(), self.mock]
+        self.mock.json.return_value = HTTP_SUCCESS
+
+        key = self.cache.load_key("jku1", "key-id-1")
+
+        self.assert_key_equal(KEY_ID_1, key)
+        self.assertEqual(4, mock_requests.call_count)
+
+    def test_timeout_retry_fail(self, mock_requests, mock_time):
+        mock_requests.side_effect = [Timeout(), Timeout(), Timeout(), Timeout()]
+
+        with self.assertRaises(Timeout):
+            self.cache.load_key("jku1", "key-id-1")
+        self.assertEqual(4, mock_requests.call_count)
+
+    def test_http_retry_(self, mock_requests, mock_time):
+        response = Response()
+        response.status_code = 502
+        mock_requests.side_effect = [HTTPError(response=response), self.mock]
+        self.mock.json.return_value = HTTP_SUCCESS
+
+        key = self.cache.load_key("jku1", "key-id-1")
+        self.assertEqual(2, mock_requests.call_count)
+        self.assert_key_equal(KEY_ID_1, key)
 
 
 def strip_white_space(key):

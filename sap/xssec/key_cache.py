@@ -1,12 +1,12 @@
 import logging
 import time
+from requests import HTTPError, ConnectionError, Timeout
+
 import requests
 from collections import OrderedDict
 from threading import Lock
 
-from sap.xssec.constants import HTTP_TIMEOUT_IN_SECONDS
-from sap.xssec.constants import KEYCACHE_DEFAULT_CACHE_SIZE
-from sap.xssec.constants import KEYCACHE_DEFAULT_CACHE_ENTRY_EXPIRATION_TIME_IN_MINUTES
+from sap.xssec.constants import *
 
 lock = Lock()
 
@@ -27,6 +27,7 @@ class KeyCache(object):
     keys are invalid if KEYCACHE_DEFAULT_CACHE_ENTRY_EXPIRATION_TIME_IN_MINUTES have passed since the key
     has been in inserted in the cache.
     """
+
     def __init__(self):
         self._cache = OrderedDict()
         self._logger = logging.getLogger(__name__)
@@ -63,8 +64,7 @@ class KeyCache(object):
 
     def _retrieve_key(self, jku, kid):
         try:
-            r = requests.get(jku, timeout=HTTP_TIMEOUT_IN_SECONDS)
-            r.raise_for_status()
+            r = self._request_key_with_retry(jku)
             r_json = r.json()
 
             for key in r_json.get('keys', {}):
@@ -75,6 +75,23 @@ class KeyCache(object):
         except requests.exceptions.HTTPError as e:
             self._logger.error("Error while trying to get key from uaa. {}".format(e))
             raise
+
+    def _request_key_with_retry(self, jku):
+        i = 0
+        while True:
+            try:
+                r = requests.get(jku, timeout=HTTP_TIMEOUT_IN_SECONDS)
+                r.raise_for_status()
+                return r
+            except (HTTPError, Timeout) as e:
+                if i < HTTP_RETRY_NUMBER_RETRIES and (isinstance(e, Timeout) or
+                                                      e.response.status_code in HTTP_RETRY_ON_ERROR_CODE):
+                    i = i + 1
+                    self._logger.warn("Warning: Error while trying to get key from uaa. {}. Start retry attempt {}".
+                                      format(e, str(i)))
+                    time.sleep(2**(i-1) * HTTP_RETRY_BACKOFF_FACTOR)
+                else:
+                    raise
 
     @staticmethod
     def _create_cache_key(jku, kid):
