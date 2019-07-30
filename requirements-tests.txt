@@ -4,3 +4,5 @@ tox
 pylint
 mock
 parameterized
+sap_py_jwt
+cryptography
