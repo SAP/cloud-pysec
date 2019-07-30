@@ -19,12 +19,7 @@ except ImportError:
     from mock import MagicMock, patch
 
 # test with sap-jwt if installed
-TEST_PARAMETERS = [(False,),]
-try:
-    from sapjwt import jwtValidation
-    TEST_PARAMETERS.append((True,))
-except ImportError:
-    pass
+TEST_PARAMETERS = [(False,), (True,)]
 
 
 @parameterized_class(('USE_SAP_PY_JWT',), TEST_PARAMETERS)
