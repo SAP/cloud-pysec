@@ -351,9 +351,35 @@ class XSSECTest(unittest.TestCase):
                 jwt_tokens.CORRECT_CLIENT_CREDENTIALS_BROKER_PLAN_TOKEN,
                 uaa_configs.INVALID['uaa_broker_plan_wrong_suffix'])
         self.assertEqual(
-            'Client Id "sb-xssectestclone!b4|sb-xssectest!b4" of the'
-            ' access token does not allow consumption by the Client Id'
-            ' "sb-xssectest!t4" of the current application', str(ctx.exception))
+            'Missmatch of client id and/or identityzone id. No JWT trust ACL (SAP_JWT_TRUST_ACL) specified in environment. '
+            'Client id of the access token: "sb-xssectestclone!b4|sb-xssectest!b4", identity zone of the access token: '
+            '"test-idz", OAuth client id: "sb-xssectest!t4", application identity zone: "test-idz".'
+            , str(ctx.exception))
+
+    def test_valid_application_plan_with_trustedclientidsuffix(self):
+        ''' valid application plan with shared tenant mode, defined via SAP_JWT_TRUST_ACL '''
+        environ['SAP_JWT_TRUST_ACL'] = json.dumps([{
+            'clientid': '*',
+            'identityzone': '*'
+        }])
+        sec_context = xssec.create_security_context(
+            jwt_tokens.INVALID_TRUSTED_APPLICATION_PLAN_TOKEN,
+            uaa_configs.INVALID['uaa_broker_plan_wrong_suffix'])
+        self.assertEqual('sb-tenant-test!t13',sec_context.get_clientid())
+        self.assertEqual('api',sec_context.get_identity_zone())
+
+    def test_invalid_application_plan_with_trustedclientidsuffix(self):
+        ''' invalid application plan with SAP_JWT_TRUST_ACL '''
+        environ['SAP_JWT_TRUST_ACL'] = json.dumps([{
+            'clientid': 'wrong-tenant',
+            'identityzone': 'api'
+        }])
+        with self.assertRaises(RuntimeError) as ctx:
+            sec_context = xssec.create_security_context(
+                jwt_tokens.INVALID_TRUSTED_APPLICATION_PLAN_TOKEN,
+                uaa_configs.INVALID['uaa_broker_plan_wrong_suffix'])
+        self.assertTrue(str(ctx.exception).startswith(
+                'No match found in JWT trust ACL (SAP_JWT_TRUST_ACL)'))
 
     def test_token_with_ext_cxt(self):
         ''' valid user token with "ext_cxt" property '''
