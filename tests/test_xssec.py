@@ -378,7 +378,8 @@ class XSSECTest(unittest.TestCase):
             sec_context = xssec.create_security_context(
                 jwt_tokens.INVALID_TRUSTED_APPLICATION_PLAN_TOKEN,
                 uaa_configs.INVALID['uaa_broker_plan_wrong_suffix'])
-        self.assertEqual('No match found in JWT trust ACL (SAP_JWT_TRUST_ACL) [{\'clientid\': \'wrong-tenant\', \'identityzone\': \'api\'}]',str(ctx.exception))
+        self.assertTrue(str(ctx.exception).startswith(
+                'No match found in JWT trust ACL (SAP_JWT_TRUST_ACL)'))
 
     def test_token_with_ext_cxt(self):
         ''' valid user token with "ext_cxt" property '''
