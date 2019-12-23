@@ -164,20 +164,13 @@ class SecurityContext(object):
             else:
                 self._logger.debug('Client Id of the access token (XSUAA application plan)'
                                    ' matches with the current application\'s Client Id.')
-        elif self._config.get('trustedclientidsuffix'):
+        elif self._config.get('trustedclientidsuffix') and jwt_payload['cid'].endswith(self._config['trustedclientidsuffix']):
             self._logger.debug('Token of UAA service plan "broker" received.')
-
-            if jwt_payload['cid'].endswith(self._config['trustedclientidsuffix']):
-                self._logger.debug(
-                    'Client Id "%s" of the access token allows consumption by'
-                    ' the Client Id "%s" of the current application',
-                    jwt_payload['cid'], self._config['clientid'])
-                self._properties['is_foreign_mode'] = False
-            else:
-                raise RuntimeError('Client Id "{0}" of the access token does not allow'
-                                   ' consumption by the Client Id "{1}" of the current'
-                                   ' application'.format(
-                                       jwt_payload['cid'], self._config['clientid']))
+            self._logger.debug(
+                'Client Id "%s" of the access token allows consumption by'
+                ' the Client Id "%s" of the current application',
+                jwt_payload['cid'], self._config['clientid'])
+            self._properties['is_foreign_mode'] = False
         elif 'SAP_JWT_TRUST_ACL' in environ:
             self._logger.debug(
                 'Client Id "%s" and/or Identity Zone "%s" of the access'
