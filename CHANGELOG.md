@@ -5,7 +5,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 2.0.8
+
+### Changed
+- Fix for broker plan; adapt fix from node/xssec version 2.1.14
+
 ## 2.0.7
+
 ### Changed
 - Use sap_py_jwt as default library for decoding
 
