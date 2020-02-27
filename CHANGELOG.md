@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 2.0.9
+
+### Changed
+- Fix for SAP_JWT_TRUST_ACL; fails after first non-matching entry.
+
 ## 2.0.8
 
 ### Changed
