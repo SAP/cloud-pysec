@@ -187,6 +187,10 @@ class XSSECTest(unittest.TestCase):
 
     def _check_token_in_foreign_mode(self, cid, idz, uaa_config_name):
         environ['SAP_JWT_TRUST_ACL'] = json.dumps([{
+            'clientid': 'other-clientid',
+            'identityzone': 'other-idz'
+        },
+        {
             'clientid': cid,
             'identityzone': idz
         }])

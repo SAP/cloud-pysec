@@ -191,10 +191,10 @@ class SecurityContext(object):
                     self._logger.debug('Foreign token received, but matching entry'
                                        ' in JWT trust ACL (SAP_JWT_TRUST_ACL) found.')
                     break
-                if not self._properties['is_foreign_mode']:
-                    raise RuntimeError(
-                        'No match found in JWT trust ACL (SAP_JWT_TRUST_ACL) {0}'.format(
-                            acl_trust))
+            if not self._properties['is_foreign_mode']:
+                raise RuntimeError(
+                    'No match found in JWT trust ACL (SAP_JWT_TRUST_ACL) {0}'.format(
+                        acl_trust))
         else:
             raise RuntimeError(
                 'Missmatch of client id and/or identityzone id.'
