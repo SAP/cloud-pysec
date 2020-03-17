@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 2.0.10
+
+### Changed
+- Dependency update for six
+
 ## 2.0.9
 
 ### Changed
