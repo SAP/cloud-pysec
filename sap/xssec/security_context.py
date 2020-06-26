@@ -5,6 +5,7 @@ import json
 from datetime import datetime
 import logging
 import requests
+import deprecation
 
 from sap.xssec import constants
 from sap.xssec.jwt_validation_facade import JwtValidationFacade, DecodeError
@@ -33,7 +34,7 @@ def _check_config(config):
 
 
 class SecurityContext(object):
-    ''' SecurityContext class '''
+    """ SecurityContext class """
 
     verificationKeyCache = KeyCache()
 
@@ -268,6 +269,9 @@ class SecurityContext(object):
                 'serviceinstanceid')
             self._properties['subdomain'] = ext_attr.get(
                 'zdn')
+
+            #TODO do the same for `subaccount_id` property
+
         self._logger.debug(
             'Obtained serviceinstanceid: %s.', self._properties['service_instance_id'])
         self._logger.debug(
@@ -301,7 +305,15 @@ class SecurityContext(object):
         self._set_grant_type(jwt_payload)
         self._set_origin(jwt_payload)
         self._properties['clientid'] = jwt_payload['cid']
+
+        # TODO deprecated - no one should use it anymore and instead we should have another attribute called zone_id
+        # and this should returns it, like in line 307 (jwt_payload['zid'])
+        # maybe remove `identity_zone` if possible
         self._properties['identity_zone'] = jwt_payload['zid']
+
+        # here:
+        self._properties['zone_id'] = jwt_payload['zid']
+
         self._set_jwt_expiration(jwt_payload)
         self._set_user_info(jwt_payload)
         self._set_additional_auth_attr(jwt_payload)
@@ -318,50 +330,57 @@ class SecurityContext(object):
     def _get_user_info_property(self, property_name):
         return self._get_property_of(property_name, self._properties['user_info'])
 
+    @deprecation.deprecated(deprecated_in="2.0.11", details="Use the get_zone_id method instead")
     def get_identity_zone(self):
-        ''':return: The identity zone. '''
-        return self._properties['identity_zone']
+        """:return: The identity zone. """
+        return self._properties['zone_id']
+
+    def get_zone_id(self):
+        """:return: The zone id. """
+        return self._properties['zone_id']
 
     def get_subaccount_id(self):
-        ''':return: The subaccount id. '''
-        return self._properties['identity_zone']
+        """:return: zone_id for now as a workaround, but only if subaccount id is not available."""
+        if self._properties['subaccount_id']:
+            return self._properties['subaccount_id']
+        return self._properties['zone_id']
 
     def get_subdomain(self):
-        ''':return: The subdomain that the access token has been issued for. '''
+        """:return: The subdomain that the access token has been issued for. """
         return self._properties['subdomain']
 
     def get_clientid(self):
-        ''':return: The client id that the access token has been issued for '''
+        """:return: The client id that the access token has been issued for """
         return self._properties['clientid']
 
     def get_expiration_date(self):
-        ''':return: The expiration date of the token. '''
+        """:return: The expiration date of the token. """
         return self._properties['expiration_date']
 
     def get_logon_name(self):
-        ''':return: The logon name or None if token is with grant type client credentials. '''
+        """:return: The logon name or None if token is with grant type client credentials. """
         return self._get_user_info_property('logon_name')
 
     def get_given_name(self):
-        ''':return: The given name or None if token is with grant type client credentials. '''
+        """:return: The given name or None if token is with grant type client credentials. """
         return self._get_user_info_property('given_name')
 
     def get_family_name(self):
-        ''':return: The family name or None if token is with grant type client credentials. '''
+        """:return: The family name or None if token is with grant type client credentials. """
         return self._get_user_info_property('family_name')
 
     def get_email(self):
-        ''':return: The email or None if token is with grant type client credentials. '''
+        """:return: The email or None if token is with grant type client credentials. """
         return self._get_user_info_property('email')
 
     def get_token(self, namespace, name):
-        '''
+        """
         :param namespace: Namespace used for identifying the different use cases.
 
         :param name: The name used to differentiate between tokens in a given namespace.
 
         :return: Token.
-        '''
+        """
         _check_if_valid(namespace, 'namespace')
         _check_if_valid(name, 'name')
 
@@ -388,21 +407,21 @@ class SecurityContext(object):
         return None
 
     def get_hdb_token(self):
-        ''':return: Token that can be used for contacting the HANA database. '''
+        """:return: Token that can be used for contacting the HANA database. """
         return self.get_token(constants.SYSTEM, constants.HDB)
 
     def get_app_token(self):
-        ''':return: Application Token that can be used for token forwarding. '''
+        """:return: Application Token that can be used for token forwarding. """
         return self._token
 
     def check_scope(self, scope):
-        '''
+        """
         :param scope: the scope whose existence is checked against
             the available scopes of the current user.
             Here, the prefix is required, thus the scope string is "globally unique".
 
         :return: True if the scope is contained in the user's scopes, False otherwise.
-        '''
+        """
         _check_if_valid(scope, 'scope')
         if scope[:len(constants.XSAPPNAMEPREFIX)] == constants.XSAPPNAMEPREFIX:
             scope = scope.replace(
@@ -411,37 +430,37 @@ class SecurityContext(object):
         return scope in self._properties['scopes']
 
     def check_local_scope(self, scope):
-        '''
+        """
         :param scope: the scope whose existence is checked against
             the available scopes of the current user. Here, no prefix is required.
 
         :return: True if the scope is contained in the user's scopes, False otherwise.
-        '''
+        """
         _check_if_valid(scope, 'scope')
         global_scope = self._properties['xsappname'] + '.' + scope
         return self.check_scope(global_scope)
 
     def get_grant_type(self):
-        ''':return: The grant type of the JWT token. '''
+        """:return: The grant type of the JWT token. """
         return self._properties['grant_type']
 
     def get_origin(self):
-        '''
+        """
         :return: The user origin. The origin is an alias that refers to a user store in
             which the user is persisted.
-        '''
+        """
         return self._properties['origin']
 
     def get_clone_service_instance_id(self):
-        ''':return: The service instance id of the clone if the XSUAA broker plan is used. '''
+        """:return: The service instance id of the clone if the XSUAA broker plan is used. """
         return self._properties['service_instance_id']
 
     def is_in_foreign_mode(self):
-        '''
+        """
         :return: True if the token, that the security context has been
              instantiated with, is a foreign token that was not originally
              issued for the current application, False otherwise.
-        '''
+        """
         return self._properties['is_foreign_mode']
 
     def _check_uaa_response(self, response, url, grant_type):
@@ -490,7 +509,7 @@ class SecurityContext(object):
         return response.json()['access_token']
 
     def request_token_for_client(self, service_credentials, scopes=None):
-        '''
+        """
         :param service_credentials: The credentials of the service as dict.
             The attributes clientid, clientsecret and url (UAA) are mandatory.
 
@@ -499,7 +518,7 @@ class SecurityContext(object):
             Note that $XSAPPNAME is not supported as part of the scope names.
 
         :return: Token.
-        '''
+        """
         _check_if_valid(service_credentials, 'service_credentials')
         for prop in ['clientid', 'clientsecret', 'url']:
             if prop not in service_credentials:
@@ -513,10 +532,10 @@ class SecurityContext(object):
             service_credentials, self._get_refresh_token(service_credentials, scopes))
 
     def has_attributes(self):
-        '''
+        """
         :return: True if the token contains any xs user attributes, False otherwise.
             Not available for tokens of grant_type client_credentials.
-        '''
+        """
         has_user_attributes = self._get_property_of(
             'user_attributes', self._properties)
         if has_user_attributes is not None:
@@ -524,7 +543,7 @@ class SecurityContext(object):
         return None
 
     def get_attribute(self, name):
-        '''
+        """
         :param name: The name of the attribute that is requested.
 
         :return: The attribute exactly as it is contained in the access token.
@@ -534,7 +553,7 @@ class SecurityContext(object):
             token and the OAuth client of the current application do not match),
             None is returned regardless of whether the requested attribute is contained
             in the token or not.
-        '''
+        """
         _check_if_valid(name, 'name')
         has_attributes = self.has_attributes()
         if not has_attributes:
@@ -559,14 +578,14 @@ class SecurityContext(object):
         return self._properties['user_attributes'][name]
 
     def get_additional_auth_attribute(self, name):
-        '''
+        """
         :param name: The name of the additional authentication attribute that is requested.
 
         :return: The additional authentication attribute exactly as it is contained in
             the access token. If no attribute with the given name is contained in the
             access token, None is returned. Note that additional authentication attributes
             are also returned in foreign mode (in contrast to getAttribute).
-        '''
+        """
         _check_if_valid(name, 'name')
         if not bool(self._properties['additional_auth_attributes']):
             self._logger.debug(
