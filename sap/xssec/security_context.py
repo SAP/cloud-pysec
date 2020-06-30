@@ -269,13 +269,14 @@ class SecurityContext(object):
                 'serviceinstanceid')
             self._properties['subdomain'] = ext_attr.get(
                 'zdn')
-
-            #TODO do the same for `subaccount_id` property
-
+            self._properties['subaccount_id'] = ext_attr.get(
+                'subaccountid')
         self._logger.debug(
             'Obtained serviceinstanceid: %s.', self._properties['service_instance_id'])
         self._logger.debug(
             'Obtained subdomain: %s.', self._properties['subdomain'])
+        self._logger.debug(
+            'Obtained subaccountid: %s.', self._properties['subaccountid'])
 
     def _set_scopes(self, jwt_payload):
         self._properties['scopes'] = jwt_payload.get('scope') or []
