@@ -113,7 +113,6 @@ class SecurityContext(object):
         }
         self._properties['scopes'] = []
         self._properties['saml_token'] = None
-        self._properties['identity_zone'] = None
         self._properties['subdomain'] = None
         self._properties['clientid'] = None
         self._properties['user_attributes'] = {}
@@ -307,15 +306,7 @@ class SecurityContext(object):
         self._set_grant_type(jwt_payload)
         self._set_origin(jwt_payload)
         self._properties['clientid'] = jwt_payload['cid']
-
-        # TODO deprecated - no one should use it anymore and instead we should have another attribute called zone_id
-        # and this should returns it, like in line 307 (jwt_payload['zid'])
-        # maybe remove `identity_zone` if possible
-        self._properties['identity_zone'] = jwt_payload['zid']
-
-        # here:
         self._properties['zone_id'] = jwt_payload['zid']
-
         self._set_jwt_expiration(jwt_payload)
         self._set_user_info(jwt_payload)
         self._set_additional_auth_attr(jwt_payload)
