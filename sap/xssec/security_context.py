@@ -265,18 +265,19 @@ class SecurityContext(object):
     def _set_ext_attr(self, jwt_payload):
         ext_attr = jwt_payload.get('ext_attr')
         if ext_attr:
-            self._properties['service_instance_id'] = ext_attr.get(
-                'serviceinstanceid')
-            self._properties['subdomain'] = ext_attr.get(
-                'zdn')
-            self._properties['subaccount_id'] = ext_attr.get(
-                'subaccountid')
-        self._logger.debug(
-            'Obtained serviceinstanceid: %s.', self._properties['service_instance_id'])
-        self._logger.debug(
-            'Obtained subdomain: %s.', self._properties['subdomain'])
-        self._logger.debug(
-            'Obtained subaccountid: %s.', self._properties['subaccountid'])
+            self._properties['service_instance_id'] = ext_attr.get('serviceinstanceid')
+            self._logger.debug('Obtained serviceinstanceid: %s.', self._properties['service_instance_id'])
+
+            self._properties['subdomain'] = ext_attr.get('zdn')
+            self._logger.debug('Obtained subdomain: %s.', self._properties['subdomain'])
+
+            if 'subaccountid' in ext_attr:
+                self._properties['subaccount_id'] = ext_attr.get('subaccountid')
+                self._logger.debug('Obtained subaccountid: %s.', self._properties['subaccountid'])
+            else:
+                self._properties['subaccount_id'] =jwt_payload['zid']
+                self._logger.debug('Subaccountid not found. Using zid instead: %s.', self._properties['subaccountid'])
+
 
     def _set_scopes(self, jwt_payload):
         self._properties['scopes'] = jwt_payload.get('scope') or []
