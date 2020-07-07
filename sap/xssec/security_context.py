@@ -275,7 +275,7 @@ class SecurityContext(object):
                 self._logger.debug('Obtained subaccountid: %s.', self._properties['subaccountid'])
             else:
                 self._properties['subaccount_id'] =jwt_payload['zid']
-                self._logger.debug('Subaccountid not found. Using zid instead: %s.', self._properties['subaccountid'])
+                self._logger.debug('Subaccountid not found. Using zid instead: %s.', jwt_payload['zid'])
 
 
     def _set_scopes(self, jwt_payload):
