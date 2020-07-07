@@ -334,7 +334,7 @@ class SecurityContext(object):
 
     def get_subaccount_id(self):
         """:return: zone_id for now as a workaround, but only if subaccount id is not available."""
-        if self._properties['subaccount_id']:
+        if 'subaccount_id' in self._properties:
             return self._properties['subaccount_id']
         return self._properties['zone_id']
 
