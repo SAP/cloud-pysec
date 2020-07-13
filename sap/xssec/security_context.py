@@ -270,6 +270,7 @@ class SecurityContext(object):
             self._properties['subdomain'] = ext_attr.get('zdn')
             self._logger.debug('Obtained subdomain: %s.', self._properties['subdomain'])
 
+            # set subaccount_id to the zone_id as a workaround, if subaccount id is not available.
             if 'subaccountid' in ext_attr:
                 self._properties['subaccount_id'] = ext_attr.get('subaccountid')
                 self._logger.debug('Obtained subaccountid: %s.', self._properties['subaccountid'])
@@ -333,10 +334,8 @@ class SecurityContext(object):
         return self._properties['zone_id']
 
     def get_subaccount_id(self):
-        """:return: zone_id for now as a workaround, but only if subaccount id is not available."""
-        if 'subaccount_id' in self._properties:
-            return self._properties['subaccount_id']
-        return self._properties['zone_id']
+        """:return: The subaccount id"""
+        return self._properties['subaccount_id']
 
     def get_subdomain(self):
         """:return: The subdomain that the access token has been issued for. """
