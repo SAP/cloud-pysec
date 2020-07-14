@@ -1,5 +1,3 @@
-from typing import Set
-
 class JwtAudienceValidator(object):
     '''
      Validates if the jwt access token is intended for the OAuth2 client of this
@@ -58,7 +56,7 @@ class JwtAudienceValidator(object):
         tokenAudiences = audiencesFromToken
 
         for audience in tokenAudiences:
-            if audience.indexOf(self.DOT) > -1:
+            if audience.index(self.DOT) > -1:
          # CF UAA derives the audiences from the scopes.
          # In case the scopes contains namespaces, these needs to be removed.
              audience = audience.substring(0, audience.indexOf(self.DOT)).trim();
@@ -71,7 +69,7 @@ class JwtAudienceValidator(object):
 
             for scope in scopesFromToken:
 
-                if scope.indexOf(self.DOT) > -1:
+                if scope.index(self.DOT) > -1:
                   audience = scope.substring(0, scope.indexOf(self.DOT)).trim();
                 if audience and (audience not in audiences):
                     audiences.push(audience)
@@ -89,10 +87,10 @@ class JwtAudienceValidator(object):
 
     def validateAudienceOfXsuaaBrokerClone(self, allowedAudiences):
         for configuredClientId in self.clientIds:
-            if configuredClientId.includes("!b") :
+            if configuredClientId.contains("!b") :
              # isBrokerClientId
                 for audience in allowedAudiences:
-                    if (audience.endsWith("|" + configuredClientId)):
+                    if (audience.endswith("|" + configuredClientId)):
                         return True
 
         return False
