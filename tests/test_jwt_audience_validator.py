@@ -54,5 +54,6 @@ class TestJwtAudienceValidator:
     def test_brokerClientIdMatchesCloneAudience(self):
         audiencesfromToken = ["sb-f7016e93-8665-4b73-9b46-f99d7808fe3c!b446|" + self.XSUAA_BROKER_XSAPPNAME]
         self.jwt_audience_validator = JwtAudienceValidator("sb-" + self.XSUAA_BROKER_XSAPPNAME)
+        self.jwt_audience_validator.configureTrustedClientId(self.XSUAA_BROKER_XSAPPNAME)
         validation_result = self.jwt_audience_validator.validateToken(audiencesFromToken=audiencesfromToken)
         assert validation_result == True
