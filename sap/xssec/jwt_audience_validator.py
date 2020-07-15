@@ -52,6 +52,9 @@ class JwtAudienceValidator(object):
 
 
     def extractAudiencesFromToken(self, audiencesFromToken, scopesFromToken, clientIdFromToken):
+        '''
+        Extracts Audience From Token
+        '''
         audiences = []
         tokenAudiences = audiencesFromToken
 
