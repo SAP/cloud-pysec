@@ -46,7 +46,7 @@ class TestJwtAudienceValidator:
         assert validation_result == True
 
     # def test_tokenClientIdMatchesTrustedClientId(self):
-    #     audiencesfromToken = ["client", "foreignclient", "sb-test4!t1.data"]
+    #     audiencesfromToken = []
     #     self.jwt_audience_validator = JwtAudienceValidator("client")
     #     validation_result = self.jwt_audience_validator.validateToken(audiencesfromToken)
     #     assert validation_result == True
@@ -57,3 +57,32 @@ class TestJwtAudienceValidator:
         self.jwt_audience_validator.configureTrustedClientId(self.XSUAA_BROKER_XSAPPNAME)
         validation_result = self.jwt_audience_validator.validateToken(audiencesFromToken=audiencesfromToken)
         assert validation_result == True
+
+    def test_tokenClientIdMatchesTrustedBrokerClientId(self):
+        clientIdFromToken = "sb-clone-app-id!b123|" + self.XSUAA_BROKER_XSAPPNAME
+        self.jwt_audience_validator = JwtAudienceValidator(self.XSUAA_BROKER_XSAPPNAME)
+        validation_result = self.jwt_audience_validator.validateToken(clientIdFromToken= clientIdFromToken)
+        assert validation_result == True
+
+    def test_tokenClientIdDoesNotMatchTrustedBrokerClientId(self):
+        clientIdFromToken = "sb-clone-app-id!b123|xxx" + self.XSUAA_BROKER_XSAPPNAME
+        self.jwt_audience_validator = JwtAudienceValidator(self.XSUAA_BROKER_XSAPPNAME)
+        validation_result = self.jwt_audience_validator.validateToken(clientIdFromToken=clientIdFromToken)
+        assert validation_result == False
+
+    def test_brokerClientIdDoesNotMatchCloneAudience(self):
+        audiencesfromToken = ["sb-f7016e93-8665-4b73-9b46-f99d7808fe3c!b446|ANOTHERAPP!b12"]
+        self.jwt_audience_validator = JwtAudienceValidator("sb-" + self.XSUAA_BROKER_XSAPPNAME)
+        self.jwt_audience_validator.configureTrustedClientId(self.XSUAA_BROKER_XSAPPNAME)
+        validation_result = self.jwt_audience_validator.validateToken(audiencesFromToken=audiencesfromToken)
+        assert validation_result == False
+
+    def test_negativewhen_NoTokenAudienceMatches(self):
+        audiencesfromToken = ["client", "foreignclient", "sb-test4!t1.data"]
+        self.jwt_audience_validator = JwtAudienceValidator("any")
+        self.jwt_audience_validator.configureTrustedClientId("anyOther")
+        validation_result = self.jwt_audience_validator.validateToken(audiencesFromToken=audiencesfromToken)
+        assert validation_result == False
+
+
+
