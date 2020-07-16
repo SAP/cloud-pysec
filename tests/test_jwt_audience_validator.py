@@ -18,8 +18,6 @@ class TestJwtAudienceValidator:
 
 
     def test_tokenAudienceMatchesClientId(self):
-        # audiencesfromToken = ["client", "foreignclient", "sb-test4!t1.data"]
-        # scopesFromToken = []
         clientIdFromToken = "clientid1"
         self.jwt_audience_validator = JwtAudienceValidator(clientIdFromToken)
         validation_result = self.jwt_audience_validator.validateToken(clientIdFromToken=clientIdFromToken)
@@ -39,17 +37,16 @@ class TestJwtAudienceValidator:
         validation_result = self.jwt_audience_validator.validateToken(audiencesFromToken=audiencesfromToken)
         assert validation_result == True
 
-    def test_clientIdMatchesTokenAudienceWithoutDo(self):
+    def test_clientIdMatchesTokenAudienceWithoutDot(self):
         audiencesfromToken = ["client", "sb-test4!t1.data.x"]
         self.jwt_audience_validator = JwtAudienceValidator("sb-test4!t1")
         validation_result = self.jwt_audience_validator.validateToken(audiencesFromToken=audiencesfromToken)
         assert validation_result == True
 
-    # def test_tokenClientIdMatchesTrustedClientId(self):
-    #     audiencesfromToken = []
-    #     self.jwt_audience_validator = JwtAudienceValidator("client")
-    #     validation_result = self.jwt_audience_validator.validateToken(audiencesfromToken)
-    #     assert validation_result == True
+    def test_tokenClientIdMatchesTrustedClientId(self):
+        self.jwt_audience_validator = JwtAudienceValidator("client")
+        validation_result = self.jwt_audience_validator.validateToken(clientIdFromToken="client")
+        assert validation_result == True
 
     def test_brokerClientIdMatchesCloneAudience(self):
         audiencesfromToken = ["sb-f7016e93-8665-4b73-9b46-f99d7808fe3c!b446|" + self.XSUAA_BROKER_XSAPPNAME]
@@ -84,5 +81,22 @@ class TestJwtAudienceValidator:
         validation_result = self.jwt_audience_validator.validateToken(audiencesFromToken=audiencesfromToken)
         assert validation_result == False
 
+    def test_shouldFilterEmptyAudiences(self):
+        audiencesfromToken = [".", "test.", " .test2"]
+        self.jwt_audience_validator = JwtAudienceValidator("any")
+        validation_result = self.jwt_audience_validator.validateToken(audiencesFromToken=audiencesfromToken)
+        assert validation_result == False
 
+    def test_negative_Fails_when_TokenAudiencesAreEmpty(self):
+        self.jwt_audience_validator = JwtAudienceValidator("any")
+        validation_result = self.jwt_audience_validator.validateToken()
+        assert validation_result == False
 
+    def test_extractAudiencesFromTokenScopes(self):
+        scopes = ["client.read", "test1!t1.read", "client.write", "xsappid.namespace.ns.write", "openid"]
+        self.jwt_audience_validator = JwtAudienceValidator("client")
+        audiences_result = self.jwt_audience_validator.extractAudiencesFromToken(scopesFromToken=scopes)
+        assert len(audiences_result) == 3
+        assert ('client') in audiences_result
+        assert ('xsappid') in audiences_result
+        assert ('test1!t1') in audiences_result

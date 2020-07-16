@@ -57,7 +57,7 @@ class JwtAudienceValidator(object):
             return False
 
 
-    def extractAudiencesFromToken(self, audiencesFromToken, scopesFromToken, clientIdFromToken):
+    def extractAudiencesFromToken(self, audiencesFromToken= [], scopesFromToken= [], clientIdFromToken=None):
         '''
         Extracts Audience From Token
         '''
@@ -78,8 +78,8 @@ class JwtAudienceValidator(object):
 
             for scope in scopesFromToken:
 
-                if scope.index(self.DOT) > -1:
-                  audience = scope.substring[0, scope.find(self.DOT)].strip()
+                if scope.find(self.DOT) > -1:
+                  audience = scope[0 :scope.find(self.DOT)].strip()
                 if audience and (audience not in audiences):
                     audiences.append(audience)
 
