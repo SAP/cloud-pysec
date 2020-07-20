@@ -5,7 +5,7 @@ except ImportError:
     from mock import MagicMock, patch
 
 
-from xssec.jwt_audience_validator import JwtAudienceValidator
+from sap.xssec.jwt_audience_validator import JwtAudienceValidator
 
 
 class TestJwtAudienceValidator:
