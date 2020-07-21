@@ -13,34 +13,34 @@ class TestJwtAudienceValidator:
     XSUAA_BROKER_XSAPPNAME = "brokerplanmasterapp!b123"
 
     def test_constructor(self):
-        self.jwt_audience_validator = JwtAudienceValidator(clientid="ABC")
+        self.jwt_audience_validator = JwtAudienceValidator(clientid="client")
         assert (self.jwt_audience_validator.trusted_clientids).__len__() == 1
 
 
     def test_tokenaudience_matches_clientid(self):
-        clientIdFromToken = "clientid1"
-        self.jwt_audience_validator = JwtAudienceValidator(clientIdFromToken)
-        validation_result = self.jwt_audience_validator.validate_token(clientId_from_token=clientIdFromToken)
+        clientid_from_token = "clientid1"
+        self.jwt_audience_validator = JwtAudienceValidator(clientid_from_token)
+        validation_result = self.jwt_audience_validator.validate_token(clientId_from_token=clientid_from_token)
         assert  validation_result == True
 
     def test_tokenaudience_matches_appId(self):
-        audiencesfromToken=["appId!t1"]
+        audiences_from_token=["appId!t1"]
         self.jwt_audience_validator = JwtAudienceValidator("sb-appId!t1")
         self.jwt_audience_validator.configure_trusted_clientId('appId!t1')
-        validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiencesfromToken)
+        validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiences_from_token)
         assert validation_result == True
 
     def test_token_audience_matches_foreign_clientId(self):
-        audiencesfromToken = ["client", "foreignclient", "sb-test4!t1.data"]
+        audiences_from_token = ["client", "foreignclient", "sb-test4!t1.data"]
         self.jwt_audience_validator = JwtAudienceValidator("any")
         self.jwt_audience_validator.configure_trusted_clientId('foreignclient')
-        validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiencesfromToken)
+        validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiences_from_token)
         assert validation_result == True
 
     def test_clientid_matches_token_audience_without_dot(self):
-        audiencesfromToken = ["client", "sb-test4!t1.data.x"]
+        audiences_from_token = ["client", "sb-test4!t1.data.x"]
         self.jwt_audience_validator = JwtAudienceValidator("sb-test4!t1")
-        validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiencesfromToken)
+        validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiences_from_token)
         assert validation_result == True
 
     def test_token_client_id_matches_trusted_clientid(self):
@@ -49,22 +49,22 @@ class TestJwtAudienceValidator:
         assert validation_result == True
 
     def test_broker_clientid_matches_clone_audience(self):
-        audiencesfromToken = ["sb-f7016e93-8665-4b73-9b46-f99d7808fe3c!b446|" + self.XSUAA_BROKER_XSAPPNAME]
+        audiences_from_token = ["sb-f7016e93-8665-4b73-9b46-f99d7808fe3c!b446|" + self.XSUAA_BROKER_XSAPPNAME]
         self.jwt_audience_validator = JwtAudienceValidator("sb-" + self.XSUAA_BROKER_XSAPPNAME)
         self.jwt_audience_validator.configure_trusted_clientId(self.XSUAA_BROKER_XSAPPNAME)
-        validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiencesfromToken)
+        validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiences_from_token)
         assert validation_result == True
 
     def test_token_clientid_matches_trusted_broker_client_id(self):
-        clientIdFromToken = "sb-clone-app-id!b123|" + self.XSUAA_BROKER_XSAPPNAME
+        clientid_from_token = "sb-clone-app-id!b123|" + self.XSUAA_BROKER_XSAPPNAME
         self.jwt_audience_validator = JwtAudienceValidator(self.XSUAA_BROKER_XSAPPNAME)
-        validation_result = self.jwt_audience_validator.validate_token(clientId_from_token= clientIdFromToken)
+        validation_result = self.jwt_audience_validator.validate_token(clientId_from_token= clientid_from_token)
         assert validation_result == True
 
     def test_token_clientid_does_not_match_trusted_broker_clientid(self):
-        clientIdFromToken = "sb-clone-app-id!b123|xxx" + self.XSUAA_BROKER_XSAPPNAME
+        clientid_from_token = "sb-clone-app-id!b123|xxx" + self.XSUAA_BROKER_XSAPPNAME
         self.jwt_audience_validator = JwtAudienceValidator(self.XSUAA_BROKER_XSAPPNAME)
-        validation_result = self.jwt_audience_validator.validate_token(clientId_from_token=clientIdFromToken)
+        validation_result = self.jwt_audience_validator.validate_token(clientId_from_token=clientid_from_token)
         assert validation_result == False
 
     def test_broker_clientid_does_not_match_clone_audience(self):
@@ -75,16 +75,16 @@ class TestJwtAudienceValidator:
         assert validation_result == False
 
     def test_negative_when_no_token_audience_matches(self):
-        audiencesfromToken = ["client", "foreignclient", "sb-test4!t1.data"]
+        audiences_from_token = ["client", "foreignclient", "sb-test4!t1.data"]
         self.jwt_audience_validator = JwtAudienceValidator("any")
         self.jwt_audience_validator.configure_trusted_clientId("anyOther")
-        validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiencesfromToken)
+        validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiences_from_token)
         assert validation_result == False
 
     def test_should_filter_empty_audiences(self):
-        audiencesfromToken = [".", "test.", " .test2"]
+        audiences_from_token = [".", "test.", " .test2"]
         self.jwt_audience_validator = JwtAudienceValidator("any")
-        validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiencesfromToken)
+        validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiences_from_token)
         assert validation_result == False
 
     def test_negative_fails_when_token_audiences_are_empty(self):
