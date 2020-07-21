@@ -94,12 +94,12 @@ class JwtAudienceValidator(object):
         else:
             return False
 
-    def validate_audience_of_xsuaabrokerclone(self, allowedAudiences):
-        for configuredClientId in self.trusted_clientids:
-            if ("!b") in configuredClientId:
+    def validate_audience_of_xsuaabrokerclone(self, allowed_audiences):
+        for configured_clientid in self.trusted_clientids:
+            if ("!b") in configured_clientid:
              # isBrokerClientId
-                for audience in allowedAudiences:
-                    if (audience.endswith("|" + configuredClientId)):
+                for audience in allowed_audiences:
+                    if (audience.endswith("|" + configured_clientid)):
                         return True
         self.is_foreign_mode=True
         return False

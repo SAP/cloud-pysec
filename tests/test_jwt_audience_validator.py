@@ -72,6 +72,7 @@ class TestJwtAudienceValidator:
         self.jwt_audience_validator = JwtAudienceValidator("sb-" + self.XSUAA_BROKER_XSAPPNAME)
         self.jwt_audience_validator.configure_trusted_clientId(self.XSUAA_BROKER_XSAPPNAME)
         validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiencesfromToken)
+        assert self.jwt_audience_validator.is_foreign_mode == True
         assert validation_result == False
 
     def test_negative_when_no_token_audience_matches(self):
@@ -79,17 +80,20 @@ class TestJwtAudienceValidator:
         self.jwt_audience_validator = JwtAudienceValidator("any")
         self.jwt_audience_validator.configure_trusted_clientId("anyOther")
         validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiences_from_token)
+        assert self.jwt_audience_validator.is_foreign_mode == True
         assert validation_result == False
 
     def test_should_filter_empty_audiences(self):
         audiences_from_token = [".", "test.", " .test2"]
         self.jwt_audience_validator = JwtAudienceValidator("any")
         validation_result = self.jwt_audience_validator.validate_token(audiences_from_token=audiences_from_token)
+        assert self.jwt_audience_validator.is_foreign_mode == True
         assert validation_result == False
 
     def test_negative_fails_when_token_audiences_are_empty(self):
         self.jwt_audience_validator = JwtAudienceValidator("any")
         validation_result = self.jwt_audience_validator.validate_token()
+        assert self.jwt_audience_validator.is_foreign_mode == True
         assert validation_result == False
 
     def test_extract_audiences_from_token_scopes(self):
@@ -97,6 +101,6 @@ class TestJwtAudienceValidator:
         self.jwt_audience_validator = JwtAudienceValidator("client")
         audiences_result = self.jwt_audience_validator.extract_audiences_from_token(scopes_from_token=scopes)
         assert len(audiences_result) == 3
-        assert ('client') in audiences_result
-        assert ('xsappid') in audiences_result
-        assert ('test1!t1') in audiences_result
+        assert 'client' in audiences_result
+        assert 'xsappid' in audiences_result
+        assert 'test1!t1' in audiences_result
