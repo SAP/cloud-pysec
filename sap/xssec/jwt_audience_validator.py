@@ -10,61 +10,61 @@ class JwtAudienceValidator(object):
 
     DOT = "."
 
-    def __init__(self, clientId):
-        self._clientId = clientId
-        self._trustedclientIds = set()
-        self.trustedclientIds = clientId
-        self._foreignmode = False
+    def __init__(self, clientid):
+        self._clientid = clientid
+        self._trusted_clientids = set()
+        self.trusted_clientids = clientid
+        self._is_foreign_mode = False
 
 
     @property
-    def trustedclientIds(self):
-        return self._trustedclientIds
+    def trusted_clientids(self):
+        return self._trusted_clientids
 
-    @trustedclientIds.setter
-    def trustedclientIds(self, clientId):
-        if clientId:
-            self._trustedclientIds.add(clientId)
-
-    @property
-    def foreignmode(self):
-        return self._foreignmode
-
-    @foreignmode.setter
-    def foreignmode(self, foreignmode):
-        self._foreignmode = foreignmode
+    @trusted_clientids.setter
+    def trusted_clientids(self, clientid):
+        if clientid:
+            self._trusted_clientids.add(clientid)
 
     @property
-    def clientId(self):
-        return self._clientId
+    def is_foreign_mode(self):
+        return self._is_foreign_mode
 
-    @clientId.setter
-    def clientId(self, clientId):
-        self._clientId = clientId
+    @is_foreign_mode.setter
+    def is_foreign_mode(self, foreignmode):
+        self._is_foreign_mode = foreignmode
 
-    def configureTrustedClientId(self, client_id):
+    @property
+    def clientid(self):
+        return self._clientid
+
+    @clientid.setter
+    def clientid(self, clientId):
+        self._clientid = clientId
+
+    def configure_trusted_clientId(self, client_id):
         if client_id:
-            self.trustedclientIds.add(client_id)
+            self.trusted_clientids.add(client_id)
 
-    def validateToken(self,clientIdFromToken=None, audiencesFromToken= [], scopesFromToken = []):
+    def validate_token(self, clientId_from_token=None, audiences_from_token= [], scopes_from_token = []):
         self.foreignMode = False
-        allowedAudiences = self.extractAudiencesFromToken(audiencesFromToken, scopesFromToken, clientIdFromToken)
-        if (self.validateSameClientId(clientIdFromToken) == True or
-                self.validateAudienceOfXsuaaBrokerClone(allowedAudiences) == True or
-                self.validateDefault(allowedAudiences)==True):
+        allowedAudiences = self.extract_audiences_from_token(audiences_from_token, scopes_from_token, clientId_from_token)
+        if (self.validate_same_clientId(clientId_from_token) == True or
+                self.validate_audience_of_xsuaabrokerclone(allowedAudiences) == True or
+                self.validate_default(allowedAudiences)==True):
             return True
         else:
             return False
 
 
-    def extractAudiencesFromToken(self, audiencesFromToken= [], scopesFromToken= [], clientIdFromToken=None):
+    def extract_audiences_from_token(self, audiences_from_token= [], scopes_from_token= [], clientid_from_token=None):
         '''
         Extracts Audience From Token
         '''
         audiences = []
-        tokenAudiences = audiencesFromToken
+        token_audiences = audiences_from_token
 
-        for audience in tokenAudiences:
+        for audience in token_audiences:
             if audience.find(self.DOT) > -1:
          # CF UAA derives the audiences from the scopes.
          # In case the scopes contains namespaces, these needs to be removed.
@@ -76,36 +76,36 @@ class JwtAudienceValidator(object):
 
         if len(audiences) == 0:
 
-            for scope in scopesFromToken:
+            for scope in scopes_from_token:
 
                 if scope.find(self.DOT) > -1:
                   audience = scope[0 :scope.find(self.DOT)].strip()
                 if audience and (audience not in audiences):
                     audiences.append(audience)
 
-            if (clientIdFromToken and (clientIdFromToken not in audiences)):
-                audiences.append(clientIdFromToken)
+            if (clientid_from_token and (clientid_from_token not in audiences)):
+                audiences.append(clientid_from_token)
 
         return audiences
 
-    def validateSameClientId(self, clientIdFromToken):
-        if clientIdFromToken == self.clientId:
+    def validate_same_clientId(self, clientid_from_token):
+        if clientid_from_token == self.clientid:
             return True
         else:
             return False
 
-    def validateAudienceOfXsuaaBrokerClone(self, allowedAudiences):
-        for configuredClientId in self.trustedclientIds:
+    def validate_audience_of_xsuaabrokerclone(self, allowedAudiences):
+        for configuredClientId in self.trusted_clientids:
             if ("!b") in configuredClientId:
              # isBrokerClientId
                 for audience in allowedAudiences:
                     if (audience.endswith("|" + configuredClientId)):
                         return True
-        self.foreignmode=True
+        self.is_foreign_mode=True
         return False
 
-    def validateDefault(self, allowedAudiences):
-        for configuredClientId in self.trustedclientIds:
+    def validate_default(self, allowedAudiences):
+        for configuredClientId in self.trusted_clientids:
             if configuredClientId in allowedAudiences:
                 return True
 
