@@ -47,11 +47,11 @@ class JwtAudienceValidator(object):
             self.trusted_clientids.add(client_id)
 
     def validate_token(self, clientId_from_token=None, audiences_from_token= [], scopes_from_token = []):
-        self.foreignMode = False
-        allowedAudiences = self.extract_audiences_from_token(audiences_from_token, scopes_from_token, clientId_from_token)
+        self.is_foreign_mode = False
+        allowed_audiences = self.extract_audiences_from_token(audiences_from_token, scopes_from_token, clientId_from_token)
         if (self.validate_same_clientId(clientId_from_token) == True or
-                self.validate_audience_of_xsuaabrokerclone(allowedAudiences) == True or
-                self.validate_default(allowedAudiences)==True):
+                self.validate_audience_of_xsuaabrokerclone(allowed_audiences) == True or
+                self.validate_default(allowed_audiences)==True):
             return True
         else:
             return False
