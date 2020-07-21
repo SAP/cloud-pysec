@@ -14,7 +14,7 @@ class TestJwtAudienceValidator:
 
     def test_constructor(self):
         self.jwt_audience_validator = JwtAudienceValidator(clientId="ABC")
-        assert (self.jwt_audience_validator.clientIds).__len__() == 1
+        assert (self.jwt_audience_validator.trustedclientIds).__len__() == 1
 
 
     def test_tokenAudienceMatchesClientId(self):

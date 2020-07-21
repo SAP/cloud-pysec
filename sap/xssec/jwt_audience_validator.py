@@ -12,19 +12,19 @@ class JwtAudienceValidator(object):
 
     def __init__(self, clientId):
         self._clientId = clientId
-        self._clientIds = set()
-        self.clientIds = clientId
+        self._trustedclientIds = set()
+        self.trustedclientIds = clientId
         self._foreignmode = False
 
 
     @property
-    def clientIds(self):
-        return self._clientIds
+    def trustedclientIds(self):
+        return self._trustedclientIds
 
-    @clientIds.setter
-    def clientIds(self, clientId):
+    @trustedclientIds.setter
+    def trustedclientIds(self, clientId):
         if clientId:
-            self._clientIds.add(clientId)
+            self._trustedclientIds.add(clientId)
 
     @property
     def foreignmode(self):
@@ -44,7 +44,7 @@ class JwtAudienceValidator(object):
 
     def configureTrustedClientId(self, client_id):
         if client_id:
-            self.clientIds.add(client_id)
+            self.trustedclientIds.add(client_id)
 
     def validateToken(self,clientIdFromToken=None, audiencesFromToken= [], scopesFromToken = []):
         self.foreignMode = False
@@ -95,7 +95,7 @@ class JwtAudienceValidator(object):
             return False
 
     def validateAudienceOfXsuaaBrokerClone(self, allowedAudiences):
-        for configuredClientId in self.clientIds:
+        for configuredClientId in self.trustedclientIds:
             if ("!b") in configuredClientId:
              # isBrokerClientId
                 for audience in allowedAudiences:
@@ -105,7 +105,7 @@ class JwtAudienceValidator(object):
         return False
 
     def validateDefault(self, allowedAudiences):
-        for configuredClientId in self.clientIds:
+        for configuredClientId in self.trustedclientIds:
             if configuredClientId in allowedAudiences:
                 return True
 
