@@ -30,9 +30,10 @@ setup(
     data_files=[('.', ['version.txt', 'CHANGELOG.md'])],
     test_suite='tests',
     install_requires=[
+        'deprecation>=2.1.0',
         'requests>=2.21.0',
         'six>=1.11.0',
-        'pyjwt==1.7.*',
+        'pyjwt>=1.7.0',
         '{}'.format(sap_py_jwt_dep)
     ],
     long_description=LONG_DESCRIPTION,
