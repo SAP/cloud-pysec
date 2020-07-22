@@ -115,6 +115,8 @@ class SecurityContext(object):
         self._properties['saml_token'] = None
         self._properties['subdomain'] = None
         self._properties['clientid'] = None
+        self._properties['zone_id'] = None
+        self._properties['subaccount_id'] = None
         self._properties['user_attributes'] = {}
         self._properties['additional_auth_attributes'] = {}
         self._properties['service_instance_id'] = None
@@ -271,12 +273,15 @@ class SecurityContext(object):
             self._logger.debug('Obtained subdomain: %s.', self._properties['subdomain'])
 
             # set subaccount_id to the zone_id as a workaround, if subaccount id is not available.
-            if 'subaccountid' in ext_attr:
+            if 'subaccountid' in ext_attr and ext_attr.get('subaccountid'):
                 self._properties['subaccount_id'] = ext_attr.get('subaccountid')
                 self._logger.debug('Obtained subaccountid: %s.', self._properties['subaccountid'])
             else:
-                self._properties['subaccount_id'] =jwt_payload['zid']
+                self._properties['subaccount_id'] = jwt_payload['zid']
                 self._logger.debug('Subaccountid not found. Using zid instead: %s.', jwt_payload['zid'])
+        else:
+            self._properties['subaccount_id'] = jwt_payload['zid']
+            self._logger.debug('Subaccountid not found. Using zid instead: %s.', jwt_payload['zid'])
 
 
     def _set_scopes(self, jwt_payload):
