@@ -63,7 +63,6 @@ class JwtAudienceValidator(object):
         '''
         audiences = []
         token_audiences = audiences_from_token
-        audience = None
         for audience in token_audiences:
             if audience.find(self.DOT) > -1:
          # CF UAA derives the audiences from the scopes.
@@ -80,7 +79,7 @@ class JwtAudienceValidator(object):
 
                 if scope.find(self.DOT) > -1:
                   audience = scope[0 :scope.find(self.DOT)].strip()
-                if audience :
+                  if audience :
                     if (audience not in audiences):
                         audiences.append(audience)
 
