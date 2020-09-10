@@ -336,9 +336,11 @@ class SecurityContext(object):
         audience_validator = JwtAudienceValidator(self._config['clientid'])
         if(self._config['xsappname']):
             audience_validator.configure_trusted_clientId(self._config['xsappname'])
-        validation_result = audience_validator.validate_token(self.get_clientid(), self.get_audience(), self._properties['scopes'])   
+        validation_result = audience_validator.validate_token(self.get_clientid(), self.get_audience(), self._properties['scopes'])
+
         if validation_result is False:
                 raise RuntimeError('Audience Validation Failed')
+
 
 
     def _get_property_of(self, property_name, obj):

@@ -28,7 +28,7 @@ class JwtAudienceValidator(object):
 
     @property
     def is_foreign_mode(self):
-        return self._is_foreign_mode
+        return False
 
     @is_foreign_mode.setter
     def is_foreign_mode(self, foreignmode):
