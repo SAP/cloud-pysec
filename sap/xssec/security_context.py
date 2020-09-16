@@ -6,15 +6,11 @@ from datetime import datetime
 import logging
 import requests
 import deprecation
+import urllib3
 
 from sap.xssec import constants
 from sap.xssec.jwt_validation_facade import JwtValidationFacade, DecodeError
 from sap.xssec.key_cache import KeyCache
-
-try:
-    from urllib.parse import urlparse
-except ImportError:
-    from urlparse import urlparse
 
 
 def _check_if_valid(item, name):
@@ -84,7 +80,7 @@ class SecurityContext(object):
         if not uaa_domain:
             raise RuntimeError("Service is not properly configured in 'VCAP_SERVICES'")
 
-        jku_url = urlparse(self._properties['jku'])
+        jku_url = urllib3.util.parse_url(self._properties['jku'])
         if not jku_url.hostname.endswith(uaa_domain):
             self._logger.error("Error: Do not trust jku '{}' because it does not match uaa domain".format(self._properties['jku']))
             raise RuntimeError("JKU of token is not trusted")
