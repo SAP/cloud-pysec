@@ -1,3 +1,5 @@
+[![REUSE status](https://api.reuse.software/badge/github.com/SAP/cloud-pysec)](https://api.reuse.software/info/github.com/SAP/cloud-pysec)
+
 # Description
 This project is a python client library called *sap_xssec* for validation of *OAuth access tokens* issued by the *XSUAA*. 
 
