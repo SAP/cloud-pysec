@@ -9,6 +9,7 @@ import deprecation
 
 from sap.xssec import constants
 from sap.xssec.jwt_validation_facade import JwtValidationFacade, DecodeError
+from sap.xssec.jwt_audience_validator import JwtAudienceValidator
 from sap.xssec.key_cache import KeyCache
 
 try:
@@ -53,6 +54,7 @@ class SecurityContext(object):
         self._set_properties_defaults()
         self._set_token_properties()
         self._offline_validation()
+        self._audience_validation()
 
     def _init_xsappname(self):
         if 'xsappname' not in self._config:
@@ -126,6 +128,9 @@ class SecurityContext(object):
         self._properties['jku'] = None
         self._properties['kid'] = None
         self._properties['uaadomain'] = None
+        # Audience Property added
+        self._properties['aud'] = None
+
 
     def _get_jwt_payload(self, verification_key):
         self._logger.debug('SSO library path: %s, CCL library path: %s',
@@ -230,6 +235,13 @@ class SecurityContext(object):
             self._properties['expiration_date'] = datetime.utcfromtimestamp(
                 jwt_expiration)
 
+    def _set_audience(self, jwt_payload):
+        self._properties['aud'] = jwt_payload.get('aud') or []
+        self._logger.debug(
+            'Application received a token with  "%s".',
+            self.get_audience())
+
+
     def _set_user_info(self, jwt_payload):
         if self.get_grant_type() == constants.GRANTTYPE_CLIENTCREDENTIAL:
             return
@@ -318,6 +330,18 @@ class SecurityContext(object):
         self._set_additional_auth_attr(jwt_payload)
         self._set_ext_attr(jwt_payload)
         self._set_scopes(jwt_payload)
+        self._set_audience(jwt_payload)
+
+    def _audience_validation(self):
+        audience_validator = JwtAudienceValidator(self._config['clientid'])
+        if(self._config['xsappname']):
+            audience_validator.configure_trusted_clientId(self._config['xsappname'])
+        validation_result = audience_validator.validate_token(self.get_clientid(), self.get_audience(), self._properties['scopes'])
+
+        if validation_result is False:
+                raise RuntimeError('Audience Validation Failed')
+
+
 
     def _get_property_of(self, property_name, obj):
         if self.get_grant_type() == constants.GRANTTYPE_CLIENTCREDENTIAL:
@@ -447,6 +471,14 @@ class SecurityContext(object):
             which the user is persisted.
         """
         return self._properties['origin']
+
+    def get_audience(self):
+        '''
+        :return: The user origin. The origin is an alias that refers to a user store in
+            which the user is persisted.
+        '''
+        return self._properties['aud']
+
 
     def get_clone_service_instance_id(self):
         """:return: The service instance id of the clone if the XSUAA broker plan is used. """
