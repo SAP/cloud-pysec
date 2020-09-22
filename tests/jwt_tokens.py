@@ -1,107 +1,59 @@
 # pylint: disable=line-too-long
 ''' Test jwt tokens '''
 
-CORRECT_END_USER_TOKEN = \
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImprdSI6Imh0dHBzOi8vYXBpLmNmLnRlc3QuY29t' \
-    'Iiwia2lkIjoia2V5LWlkLTAifQ.eyJqdGkiOiJjNjgzMTEyNS0xZWQ2LTQxYjAtOGVhOC1lNjBhM' \
-    'zQxYTI3ODciLCJzdWIiOiI0MjUxMzAiLCJzY29wZSI6WyJvcGVuaWQiLCJ1YWEucmVzb3VyY2UiX' \
-    'SwiY2xpZW50X2lkIjoic2IteHNzZWN0ZXN0IiwiY2lkIjoic2IteHNzZWN0ZXN0IiwiYXpwIjoic' \
-    '2IteHNzZWN0ZXN0IiwiZ3JhbnRfdHlwZSI6InBhc3N3b3JkIiwidXNlcl9pZCI6IjQyNTEzMCIsI' \
-    'nVzZXJfbmFtZSI6Ik5PREVURVNUVVNFUiIsImVtYWlsIjoiTm9kZXRlc3RAc2FwLmNvbSIsIm9ya' \
-    'WdpbiI6InRlc3RpZHAiLCJnaXZlbl9uYW1lIjoiTm9kZXRlc3RGaXJzdE5hbWUiLCJmYW1pbHlfb' \
-    'mFtZSI6Ik5vZGV0ZXN0TGFzdE5hbWUiLCJpYXQiOjE0NzA4MTU0MzQsImV4cCI6MjEwMTUzNTQzN' \
-    'CwiaXNzIjoiaHR0cDovL3BhYXMubG9jYWxob3N0OjgwODAvdWFhL29hdXRoL3Rva2VuIiwiemlkI' \
-    'joidGVzdC1pZHoiLCJoZGIubmFtZWR1c2VyLnNhbWwiOiI8P3htbCB2ZXJzaW9uPVwiMS4wXCIgZ' \
-    'W5jb2Rpbmc9XCJVVEYtOFwiPz48c2FtbDI6QXNzZXJ0aW9uIHhtbG5zOnNhbWwyPVwidXJuOm9hc' \
-    '2lzOm5hbWVzOnRjOlNBTUw6Mi4wOmFzc2VydGlvblwiIElEPVwiXzcxZWUxNzc2LTlkMmYtNDk3M' \
-    'y1hY2E4LTllMjJiMjk2N2FjOFwiIElzc3VlSW5zdGFudD1cIjIwMTYtMDgtMTBUMDc6NDU6MzQuM' \
-    'zQ3WlwiIFZlcnNpb249XCIyLjBcIj48c2FtbDI6SXNzdWVyPlRTVC1zYW1sPC9zYW1sMjpJc3N1Z' \
-    'XI-PGRzOlNpZ25hdHVyZSB4bWxuczpkcz1cImh0dHA6Ly93d3cudzMub3JnLzIwMDAvMDkveG1sZ' \
-    'HNpZyNcIj48ZHM6U2lnbmVkSW5mbz48ZHM6Q2Fub25pY2FsaXphdGlvbk1ldGhvZCBBbGdvcml0a' \
-    'G09XCJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzEwL3htbC1leGMtYzE0biNcIi8-PGRzOlNpZ25hd' \
-    'HVyZU1ldGhvZCBBbGdvcml0aG09XCJodHRwOi8vd3d3LnczLm9yZy8yMDAwLzA5L3htbGRzaWcjc' \
-    'nNhLXNoYTFcIi8-PGRzOlJlZmVyZW5jZSBVUkk9XCIjXzcxZWUxNzc2LTlkMmYtNDk3My1hY2E4L' \
-    'TllMjJiMjk2N2FjOFwiPjxkczpUcmFuc2Zvcm1zPjxkczpUcmFuc2Zvcm0gQWxnb3JpdGhtPVwia' \
-    'HR0cDovL3d3dy53My5vcmcvMjAwMC8wOS94bWxkc2lnI2VudmVsb3BlZC1zaWduYXR1cmVcIi8-P' \
-    'GRzOlRyYW5zZm9ybSBBbGdvcml0aG09XCJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzEwL3htbC1le' \
-    'GMtYzE0biNcIi8-PC9kczpUcmFuc2Zvcm1zPjxkczpEaWdlc3RNZXRob2QgQWxnb3JpdGhtPVwia' \
-    'HR0cDovL3d3dy53My5vcmcvMjAwMC8wOS94bWxkc2lnI3NoYTFcIi8-PGRzOkRpZ2VzdFZhbHVlP' \
-    'm91OHIzUjBXQkhHMWJwNEtLT3gxUHlWT2lZQT08L2RzOkRpZ2VzdFZhbHVlPjwvZHM6UmVmZXJlb' \
-    'mNlPjwvZHM6U2lnbmVkSW5mbz48ZHM6U2lnbmF0dXJlVmFsdWU-TGJSS3Yxci9oN0lNbWlTeXgxM' \
-    'FdrTTdKdWVrcm13eVZOc0I1M3BrRlJucmpDR1d0bUZrUXNrbnNMN2VUVU40K2djSkdXMHFHVFVtd' \
-    'lVrZlhFMU84cmYyQ21UY0MwMWNZc0dBWldiTnBPTE5tcFA5Z0c2NTcycHZlUnFqVFhMR1NpbE0yZ' \
-    'WpKaXlscTJKbkZMaFhwZ3JuVGJDdlFXNmE5SlRwUnB2TXo4U2lTb2R4YXg3ckp3N0MweVp6VXE4N' \
-    'jJNNXlOamRvSUhoRWtuZ01jQzVMRERoZnBmNlRrUU1zeVZjTWFtRHFqVFM3V1RndmtRS2w1cGtPU' \
-    'EtFdWhUakNSN1A3S0Fla2VEbVlvcXM3eUVacnJkS0VpeFNZNGk1RjN3ZU0rZHcrQTF1ZTlqRjJLb' \
-    'WVSdmpveHMyaHdmc1d3VXZDeHkrMkpocjU0dmF0bXdlRzhkSTBRPT08L2RzOlNpZ25hdHVyZVZhb' \
-    'HVlPjwvZHM6U2lnbmF0dXJlPjxzYW1sMjpTdWJqZWN0PjxzYW1sMjpOYW1lSUQgRm9ybWF0PVwid' \
-    'XJuOm9hc2lzOm5hbWVzOnRjOlNBTUw6MS4xOm5hbWVpZC1mb3JtYXQ6dW5zcGVjaWZpZWRcIj5OT' \
-    '0RFVEVTVFVTRVI8L3NhbWwyOk5hbWVJRD48c2FtbDI6U3ViamVjdENvbmZpcm1hdGlvbiBNZXRob' \
-    '2Q9XCJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6Y206YmVhcmVyXCI-PHNhbWwyOlN1YmplY' \
-    '3RDb25maXJtYXRpb25EYXRhIE5vdE9uT3JBZnRlcj1cIjIwMTYtMDgtMTBUMTE6NTA6MzQuMzQ3W' \
-    'lwiLz48L3NhbWwyOlN1YmplY3RDb25maXJtYXRpb24-PC9zYW1sMjpTdWJqZWN0PjxzYW1sMjpDb' \
-    '25kaXRpb25zIE5vdEJlZm9yZT1cIjIwMTYtMDgtMTBUMDc6NDU6MzQuMzQ3WlwiIE5vdE9uT3JBZ' \
-    'nRlcj1cIjIwMTYtMDgtMTBUMTE6NTA6MzQuMzQ3WlwiLz48c2FtbDI6QXV0aG5TdGF0ZW1lbnQgQ' \
-    'XV0aG5JbnN0YW50PVwiMjAxNi0wOC0xMFQwNzo1MDozNC4zNDdaXCIgU2Vzc2lvbk5vdE9uT3JBZ' \
-    'nRlcj1cIjIwMTYtMDgtMTBUMDc6NTU6MzQuMzQ3WlwiPjxzYW1sMjpBdXRobkNvbnRleHQ-PHNhb' \
-    'WwyOkF1dGhuQ29udGV4dENsYXNzUmVmPnVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDphYzpjb' \
-    'GFzc2VzOlBhc3N3b3JkPC9zYW1sMjpBdXRobkNvbnRleHRDbGFzc1JlZj48L3NhbWwyOkF1dGhuQ' \
-    '29udGV4dD48L3NhbWwyOkF1dGhuU3RhdGVtZW50Pjwvc2FtbDI6QXNzZXJ0aW9uPiIsImF6X2F0d' \
-    'HIiOnsiZXh0ZXJuYWxfZ3JvdXAiOiJkb21haW5ncm91cDEiLCJleHRlcm5hbF9pZCI6ImFiY2QxM' \
-    'jM0In0sImV4dF9hdHRyIjp7InNlcnZpY2VpbnN0YW5jZWlkIjoiYWJjZDEyMzQiLCJ6ZG4iOiJwY' \
-    'WFzIn0sInhzLnN5c3RlbS5hdHRyaWJ1dGVzIjp7InhzLnNhbWwuZ3JvdXBzIjpbIkNhbmFyeV9Sb' \
-    '2xlQnVpbGRlciJdLCJ4cy5yb2xlY29sbGVjdGlvbnMiOltdfSwieHMudXNlci5hdHRyaWJ1dGVzI' \
-    'jp7ImNvdW50cnkiOlsiVVNBIl19LCJhdWQiOlsic2IteHNzZWN0ZXN0Iiwib3BlbmlkIl19.' \
-    'swu7XZkGQOabL-OEnptmm3-m0c_klKPgr6iOvfT5F2I'
+END_USER_TOKEN_HEADERS = {
+    "alg": "HS256",
+    "typ": "JWT",
+    "jku": "https://api.cf.test.com",
+    "kid": "key-id-0"
+}
+DEFAULT_END_USER_TOKEN_PAYLOAD = {
+    "jti": "c6831125-1ed6-41b0-8ea8-e60a341a2787",
+    "sub": "425130",
+    "scope": [
+        "openid",
+        "uaa.resource"
+    ],
+    "client_id": "sb-xssectest",
+    "cid": "sb-xssectest",
+    "azp": "sb-xssectest",
+    "grant_type": "password",
+    "user_id": "425130",
+    "user_name": "NODETESTUSER",
+    "email": "Nodetest@sap.com",
+    "origin": "testidp",
+    "given_name": "NodetestFirstName",
+    "family_name": "NodetestLastName",
+    "iat": 1470815434,
+    "exp": 2101535434,
+    "iss": "http://paas.localhost:8080/uaa/oauth/token",
+    "zid": "test-idz",
+    "hdb.nameduser.saml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><saml2:Assertion xmlns:saml2=\"urn:oasis:names:tc:SAML:2.0:assertion\" ID=\"_71ee1776-9d2f-4973-aca8-9e22b2967ac8\" IssueInstant=\"2016-08-10T07:45:34.347Z\" Version=\"2.0\"><saml2:Issuer>TST-saml</saml2:Issuer><ds:Signature xmlns:ds=\"http://www.w3.org/2000/09/xmldsig#\"><ds:SignedInfo><ds:CanonicalizationMethod Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"/><ds:SignatureMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#rsa-sha1\"/><ds:Reference URI=\"#_71ee1776-9d2f-4973-aca8-9e22b2967ac8\"><ds:Transforms><ds:Transform Algorithm=\"http://www.w3.org/2000/09/xmldsig#enveloped-signature\"/><ds:Transform Algorithm=\"http://www.w3.org/2001/10/xml-exc-c14n#\"/></ds:Transforms><ds:DigestMethod Algorithm=\"http://www.w3.org/2000/09/xmldsig#sha1\"/><ds:DigestValue>ou8r3R0WBHG1bp4KKOx1PyVOiYA=</ds:DigestValue></ds:Reference></ds:SignedInfo><ds:SignatureValue>LbRKv1r/h7IMmiSyx10WkM7JuekrmwyVNsB53pkFRnrjCGWtmFkQsknsL7eTUN4+gcJGW0qGTUmvUkfXE1O8rf2CmTcC01cYsGAZWbNpOLNmpP9gG6572pveRqjTXLGSilM2ejJiylq2JnFLhXpgrnTbCvQW6a9JTpRpvMz8SiSodxax7rJw7C0yZzUq862M5yNjdoIHhEkngMcC5LDDhfpf6TkQMsyVcMamDqjTS7WTgvkQKl5pkOPKEuhTjCR7P7KAekeDmYoqs7yEZrrdKEixSY4i5F3weM+dw+A1ue9jF2KmeRvjoxs2hwfsWwUvCxy+2Jhr54vatmweG8dI0Q==</ds:SignatureValue></ds:Signature><saml2:Subject><saml2:NameID Format=\"urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified\">NODETESTUSER</saml2:NameID><saml2:SubjectConfirmation Method=\"urn:oasis:names:tc:SAML:2.0:cm:bearer\"><saml2:SubjectConfirmationData NotOnOrAfter=\"2016-08-10T11:50:34.347Z\"/></saml2:SubjectConfirmation></saml2:Subject><saml2:Conditions NotBefore=\"2016-08-10T07:45:34.347Z\" NotOnOrAfter=\"2016-08-10T11:50:34.347Z\"/><saml2:AuthnStatement AuthnInstant=\"2016-08-10T07:50:34.347Z\" SessionNotOnOrAfter=\"2016-08-10T07:55:34.347Z\"><saml2:AuthnContext><saml2:AuthnContextClassRef>urn:oasis:names:tc:SAML:2.0:ac:classes:Password</saml2:AuthnContextClassRef></saml2:AuthnContext></saml2:AuthnStatement></saml2:Assertion>",
+    "az_attr": {
+        "external_group": "domaingroup1",
+        "external_id": "abcd1234"
+    },
+    "ext_attr": {
+        "serviceinstanceid": "abcd1234",
+        "zdn": "paas"
+    },
+    "xs.system.attributes": {
+        "xs.saml.groups": [
+            "Canary_RoleBuilder"
+        ],
+        "xs.rolecollections": []
+    },
+    "xs.user.attributes": {
+        "country": [
+            "USA"
+        ]
+    },
+    "aud": [
+        "sb-xssectest",
+        "openid"
+    ]
+}
 
-CORRECT_END_USER_TOKEN_NO_ATTR = \
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImprdSI6Imh0dHBzOi8vYXBpLmNmLnRlc3QuY29' \
-    'tIiwia2lkIjoia2V5LWlkLTAifQ.eyJqdGkiOiJjNjgzMTEyNS0xZWQ2LTQxYjAtOGVhOC1lNjB' \
-    'hMzQxYTI3ODciLCJzdWIiOiI0MjUxMzAiLCJzY29wZSI6WyJvcGVuaWQiLCJ1YWEucmVzb3VyY2' \
-    'UiXSwiZXh0X2F0dHIiOnsiemRuIjoicGFhcyJ9LCJjbGllbnRfaWQiOiJzYi14c3NlY3Rlc3QiL' \
-    'CJjaWQiOiJzYi14c3NlY3Rlc3QiLCJhenAiOiJzYi14c3NlY3Rlc3QiLCJncmFudF90eXBlIjoi' \
-    'cGFzc3dvcmQiLCJ1c2VyX2lkIjoiNDI1MTMwIiwidXNlcl9uYW1lIjoiTk9ERVRFU1RVU0VSIiw' \
-    'iZW1haWwiOiJOb2RldGVzdEBzYXAuY29tIiwiZ2l2ZW5fbmFtZSI6Ik5vZGV0ZXN0Rmlyc3ROYW' \
-    '1lIiwiZmFtaWx5X25hbWUiOiJOb2RldGVzdExhc3ROYW1lIiwib3JpZ2luIjoidGVzdGlkcCIsI' \
-    'mlhdCI6MTQ3MDgxNTQzNCwiZXhwIjoyMTAxNTM1NDM0LCJpc3MiOiJodHRwOi8vcGFhcy5sb2Nh' \
-    'bGhvc3Q6ODA4MC91YWEvb2F1dGgvdG9rZW4iLCJ6aWQiOiJ0ZXN0LWlkeiIsImhkYi5uYW1lZHV' \
-    'zZXIuc2FtbCI6Ijw_eG1sIHZlcnNpb249XCIxLjBcIiBlbmNvZGluZz1cIlVURi04XCI_PjxzYW' \
-    '1sMjpBc3NlcnRpb24geG1sbnM6c2FtbDI9XCJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6Y' \
-    'XNzZXJ0aW9uXCIgSUQ9XCJfNzFlZTE3NzYtOWQyZi00OTczLWFjYTgtOWUyMmIyOTY3YWM4XCIg' \
-    'SXNzdWVJbnN0YW50PVwiMjAxNi0wOC0xMFQwNzo0NTozNC4zNDdaXCIgVmVyc2lvbj1cIjIuMFw' \
-    'iPjxzYW1sMjpJc3N1ZXI-VFNULXNhbWw8L3NhbWwyOklzc3Vlcj48ZHM6U2lnbmF0dXJlIHhtbG' \
-    '5zOmRzPVwiaHR0cDovL3d3dy53My5vcmcvMjAwMC8wOS94bWxkc2lnI1wiPjxkczpTaWduZWRJb' \
-    'mZvPjxkczpDYW5vbmljYWxpemF0aW9uTWV0aG9kIEFsZ29yaXRobT1cImh0dHA6Ly93d3cudzMu' \
-    'b3JnLzIwMDEvMTAveG1sLWV4Yy1jMTRuI1wiLz48ZHM6U2lnbmF0dXJlTWV0aG9kIEFsZ29yaXR' \
-    'obT1cImh0dHA6Ly93d3cudzMub3JnLzIwMDAvMDkveG1sZHNpZyNyc2Etc2hhMVwiLz48ZHM6Um' \
-    'VmZXJlbmNlIFVSST1cIiNfNzFlZTE3NzYtOWQyZi00OTczLWFjYTgtOWUyMmIyOTY3YWM4XCI-P' \
-    'GRzOlRyYW5zZm9ybXM-PGRzOlRyYW5zZm9ybSBBbGdvcml0aG09XCJodHRwOi8vd3d3LnczLm9y' \
-    'Zy8yMDAwLzA5L3htbGRzaWcjZW52ZWxvcGVkLXNpZ25hdHVyZVwiLz48ZHM6VHJhbnNmb3JtIEF' \
-    'sZ29yaXRobT1cImh0dHA6Ly93d3cudzMub3JnLzIwMDEvMTAveG1sLWV4Yy1jMTRuI1wiLz48L2' \
-    'RzOlRyYW5zZm9ybXM-PGRzOkRpZ2VzdE1ldGhvZCBBbGdvcml0aG09XCJodHRwOi8vd3d3LnczL' \
-    'm9yZy8yMDAwLzA5L3htbGRzaWcjc2hhMVwiLz48ZHM6RGlnZXN0VmFsdWU-b3U4cjNSMFdCSEcx' \
-    'YnA0S0tPeDFQeVZPaVlBPTwvZHM6RGlnZXN0VmFsdWU-PC9kczpSZWZlcmVuY2U-PC9kczpTaWd' \
-    'uZWRJbmZvPjxkczpTaWduYXR1cmVWYWx1ZT5MYlJLdjFyL2g3SU1taVN5eDEwV2tNN0p1ZWtybX' \
-    'd5Vk5zQjUzcGtGUm5yakNHV3RtRmtRc2tuc0w3ZVRVTjQrZ2NKR1cwcUdUVW12VWtmWEUxTzhyZ' \
-    'jJDbVRjQzAxY1lzR0FaV2JOcE9MTm1wUDlnRzY1NzJwdmVScWpUWExHU2lsTTJlakppeWxxMkpu' \
-    'RkxoWHBncm5UYkN2UVc2YTlKVHBScHZNejhTaVNvZHhheDdySnc3QzB5WnpVcTg2Mk01eU5qZG9' \
-    'JSGhFa25nTWNDNUxERGhmcGY2VGtRTXN5VmNNYW1EcWpUUzdXVGd2a1FLbDVwa09QS0V1aFRqQ1' \
-    'I3UDdLQWVrZURtWW9xczd5RVpycmRLRWl4U1k0aTVGM3dlTStkdytBMXVlOWpGMkttZVJ2am94c' \
-    'zJod2ZzV3dVdkN4eSsySmhyNTR2YXRtd2VHOGRJMFE9PTwvZHM6U2lnbmF0dXJlVmFsdWU-PC9k' \
-    'czpTaWduYXR1cmU-PHNhbWwyOlN1YmplY3Q-PHNhbWwyOk5hbWVJRCBGb3JtYXQ9XCJ1cm46b2F' \
-    'zaXM6bmFtZXM6dGM6U0FNTDoxLjE6bmFtZWlkLWZvcm1hdDp1bnNwZWNpZmllZFwiPk5PREVURV' \
-    'NUVVNFUjwvc2FtbDI6TmFtZUlEPjxzYW1sMjpTdWJqZWN0Q29uZmlybWF0aW9uIE1ldGhvZD1cI' \
-    'nVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDpjbTpiZWFyZXJcIj48c2FtbDI6U3ViamVjdENv' \
-    'bmZpcm1hdGlvbkRhdGEgTm90T25PckFmdGVyPVwiMjAxNi0wOC0xMFQxMTo1MDozNC4zNDdaXCI' \
-    'vPjwvc2FtbDI6U3ViamVjdENvbmZpcm1hdGlvbj48L3NhbWwyOlN1YmplY3Q-PHNhbWwyOkNvbm' \
-    'RpdGlvbnMgTm90QmVmb3JlPVwiMjAxNi0wOC0xMFQwNzo0NTozNC4zNDdaXCIgTm90T25PckFmd' \
-    'GVyPVwiMjAxNi0wOC0xMFQxMTo1MDozNC4zNDdaXCIvPjxzYW1sMjpBdXRoblN0YXRlbWVudCBB' \
-    'dXRobkluc3RhbnQ9XCIyMDE2LTA4LTEwVDA3OjUwOjM0LjM0N1pcIiBTZXNzaW9uTm90T25PckF' \
-    'mdGVyPVwiMjAxNi0wOC0xMFQwNzo1NTozNC4zNDdaXCI-PHNhbWwyOkF1dGhuQ29udGV4dD48c2' \
-    'FtbDI6QXV0aG5Db250ZXh0Q2xhc3NSZWY-dXJuOm9hc2lzOm5hbWVzOnRjOlNBTUw6Mi4wOmFjO' \
-    'mNsYXNzZXM6UGFzc3dvcmQ8L3NhbWwyOkF1dGhuQ29udGV4dENsYXNzUmVmPjwvc2FtbDI6QXV0' \
-    'aG5Db250ZXh0Pjwvc2FtbDI6QXV0aG5TdGF0ZW1lbnQ-PC9zYW1sMjpBc3NlcnRpb24-IiwiYXV' \
-    'kIjpbInNiLXhzc2VjdGVzdCIsIm9wZW5pZCJdfQ.u4GWH7-e-jI368DDEFSfmaBLcsPa1Vdd37HtUe7BV4Q'
 
 CORRECT_END_USER_TOKEN_NAMES_IN_EXT_ATTR = \
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImprdSI6Imh0dHBzOi8vYXBpLmNmLnRlc3QuY29t' \
