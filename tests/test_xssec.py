@@ -3,8 +3,9 @@ import unittest
 import json
 from os import environ
 from datetime import datetime
+from jwt import get_unverified_header
+from jwt.utils import base64url_encode
 from parameterized import parameterized_class
-
 from sap import xssec
 from sap.xssec import constants, jwt_validation_facade, security_context
 from sap.conf import config
@@ -466,3 +467,14 @@ class XSSECTest(unittest.TestCase):
             uaa_configs.VALID['uaa_xsa_with_newlines'])
         self.assertEqual(
             sec_context.get_logon_name(), 'ADMIN')
+
+    def test_invalid_jku_in_token_header(self):
+        uaa_config = uaa_configs.VALID['uaa']
+        header = get_unverified_header(jwt_tokens.CORRECT_END_USER_TOKEN)
+        header['jku'] = 'http://ana.ondemandh.com\\\\\\\\\\\\\\\\@' + uaa_config['uaadomain']
+        token_parts = jwt_tokens.CORRECT_END_USER_TOKEN.split(".")
+        token_parts[0] = base64url_encode(json.dumps(header).encode('utf-8')).decode()
+        token = '.'.join(token_parts)
+        with self.assertRaises(RuntimeError) as e:
+            xssec.create_security_context(token, uaa_config)
+        self.assertEqual("JKU of token is not trusted", str(e.exception),)
