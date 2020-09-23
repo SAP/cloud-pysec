@@ -5,6 +5,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 2.1.0
+
+### Added
+- Support for audience validation (`aud`).
+- Support for zone_id and zid.
+
 ## 2.0.10
 
 ### Changed
