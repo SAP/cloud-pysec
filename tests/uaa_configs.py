@@ -40,7 +40,7 @@ INVALID = {
     'uaa_broker_plan_wrong_suffix': {
         'clientid': 'sb-xssectest!t4',
         'verificationkey': 'NODETESTSECRET',
-        'xsappname': "sb-tenant-test!t13",
+        'xsappname': 'uaa',
         'identityzone': 'test-idz',
         'trustedclientidsuffix': 'hugo',
         'clientsecret': 'z431EZmJWiuA/yINKXGewGR/wo99JKiVKAzG7yRyUHldI'
