@@ -374,8 +374,13 @@ class XSSECTest(unittest.TestCase):
             'clientid': '*',
             'identityzone': '*'
         }])
+
+        with open('utils/test_invalid_trusted_application_plan_token.json') as f:
+            jwt_token_json = json.load(f)
+            jwt_token = json.dumps((jwt_token_json))
+
         sec_context = xssec.create_security_context(
-            jwt_tokens.INVALID_TRUSTED_APPLICATION_PLAN_TOKEN,
+            jwt_token,
             uaa_configs.INVALID['uaa_broker_plan_wrong_suffix'])
         self.assertEqual('sb-tenant-test!t13',sec_context.get_clientid())
         self.assertEqual('api', sec_context.get_identity_zone())

@@ -1,0 +1,29 @@
+{
+  "header": {
+    "alg": "HS256",
+    "typ": "JWT",
+    "kid": "key-id-0"
+  },
+  "payload": {
+    "jti": "a3b643f88e964bcab2f7e996db4b5183",
+    "ext_attr": {
+      "enhancer": "XSUAA",
+      "zdn": "api"
+    },
+    "sub": "sb-tenant-test!t13",
+    "scope": [
+      "dox-ui-poc!b7857.Callback"
+    ],
+    "client_id": "sb-tenant-test!t13",
+    "cid": "sb-tenant-test!t13",
+    "azp": "sb-tenant-test!t13",
+    "grant_type": "client_credentials",
+    "rev_sig": "f2a1a9d1",
+    "iss": "https://api.cf.test.com/uaa/oauth/token",
+    "zid": "api",
+    "aud": [
+      "dox-ui-poc!b7857",
+      "sb-tenant-test!t13"
+    ]
+  }
+}
