@@ -80,7 +80,6 @@ celerybeat-schedule
 
 # dotenv
 .env
-.venv/
 
 # virtualenv
 venv/
@@ -98,6 +97,3 @@ ENV/
 
 # local tests
 local_tests/
-
-# Mac files
-.DS_Store

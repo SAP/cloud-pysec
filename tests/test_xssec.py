@@ -130,7 +130,6 @@ class XSSECTest(unittest.TestCase):
         self.assertEqual(sec_context.get_grant_type(),
                          xssec.constants.GRANTTYPE_PASSWORD)
         self.assertEqual(sec_context.get_identity_zone(), 'test-idz')
-        self.assertEqual(sec_context.get_zone_id(), 'test-idz')
         self.assertEqual(sec_context.get_subaccount_id(), 'test-idz')
         self.assertEqual(sec_context.get_origin(), 'testidp')
         self.assertEqual(sec_context.get_subdomain(), 'paas')
@@ -250,7 +249,6 @@ class XSSECTest(unittest.TestCase):
         self.assertEqual(sec_context.get_grant_type(),
                          xssec.constants.GRANTTYPE_SAML2BEARER)
         self.assertEqual(sec_context.get_identity_zone(), 'test-idz')
-        self.assertEqual(sec_context.get_zone_id(), 'test-idz')
         self.assertEqual(sec_context.get_subaccount_id(), 'test-idz')
         self.assertIsNone(sec_context.get_subdomain())
         self.assertFalse(sec_context.is_in_foreign_mode())
@@ -274,7 +272,6 @@ class XSSECTest(unittest.TestCase):
         self.assertEqual(sec_context.get_grant_type(),
                          xssec.constants.GRANTTYPE_PASSWORD)
         self.assertEqual(sec_context.get_identity_zone(), 'test-idz')
-        self.assertEqual(sec_context.get_zone_id(), 'test-idz')
         self.assertEqual(sec_context.get_subaccount_id(), 'test-idz')
         self.assertIsNone(sec_context.get_subdomain())
         self.assertFalse(sec_context.is_in_foreign_mode())
@@ -298,7 +295,6 @@ class XSSECTest(unittest.TestCase):
         self.assertEqual(
             sec_context.get_grant_type(), xssec.constants.GRANTTYPE_CLIENTCREDENTIAL)
         self.assertEqual(sec_context.get_identity_zone(), 'test-idz')
-        self.assertEqual(sec_context.get_zone_id(), 'test-idz')
         self.assertEqual(sec_context.get_subaccount_id(), 'test-idz')
         self.assertIsNone(sec_context.get_origin())
         self.assertEqual(sec_context.get_clientid(), 'sb-xssectest')
@@ -338,7 +334,6 @@ class XSSECTest(unittest.TestCase):
         self.assertEqual(sec_context.get_grant_type(),
                          xssec.constants.GRANTTYPE_CLIENTCREDENTIAL)
         self.assertEqual(sec_context.get_identity_zone(), 'test-idz')
-        self.assertEqual(sec_context.get_zone_id(), 'test-idz')
         self.assertEqual(sec_context.get_subaccount_id(), 'test-idz')
         self.assertEqual(sec_context.get_clientid(),
                          'sb-xssectestclone!b4|sb-xssectest!b4')
@@ -379,8 +374,7 @@ class XSSECTest(unittest.TestCase):
             jwt_tokens.INVALID_TRUSTED_APPLICATION_PLAN_TOKEN,
             uaa_configs.INVALID['uaa_broker_plan_wrong_suffix'])
         self.assertEqual('sb-tenant-test!t13',sec_context.get_clientid())
-        self.assertEqual('api', sec_context.get_identity_zone())
-        self.assertEqual('api', sec_context.get_zone_id())
+        self.assertEqual('api',sec_context.get_identity_zone())
 
     def test_invalid_application_plan_with_trustedclientidsuffix(self):
         ''' invalid application plan with SAP_JWT_TRUST_ACL '''
