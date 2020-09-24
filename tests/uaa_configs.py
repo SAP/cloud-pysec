@@ -65,7 +65,7 @@ INVALID = {
 VALID = {
     'uaa': {
         'clientid': 'sb-xssectest',
-        'verificationkey': 'NODETESTSECRET',
+        'verificationkey': PUBLIC_KEY,
         'xsappname': 'uaa',
         'identityzone': 'test-idz-name',
         'identityzoneid': 'test-idz',

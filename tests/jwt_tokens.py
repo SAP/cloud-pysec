@@ -1,12 +1,19 @@
 # pylint: disable=line-too-long
 ''' Test jwt tokens '''
+import jwt
+from tests.keys import PRIVATE_KEY
+
+
+def token(payload):
+    return jwt.encode({**DEFAULT_END_USER_TOKEN_PAYLOAD, **payload}, PRIVATE_KEY, algorithm="RS256",
+                      headers=END_USER_TOKEN_HEADERS).decode("utf-8")
+
 
 END_USER_TOKEN_HEADERS = {
-    "alg": "HS256",
-    "typ": "JWT",
     "jku": "https://api.cf.test.com",
     "kid": "key-id-0"
 }
+
 DEFAULT_END_USER_TOKEN_PAYLOAD = {
     "jti": "c6831125-1ed6-41b0-8ea8-e60a341a2787",
     "sub": "425130",
@@ -54,6 +61,56 @@ DEFAULT_END_USER_TOKEN_PAYLOAD = {
     ]
 }
 
+CORRECT_END_USER_TOKEN = token({})
+
+CORRECT_END_USER_TOKEN_NO_ATTR = \
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImprdSI6Imh0dHBzOi8vYXBpLmNmLnRlc3QuY29' \
+    'tIiwia2lkIjoia2V5LWlkLTAifQ.eyJqdGkiOiJjNjgzMTEyNS0xZWQ2LTQxYjAtOGVhOC1lNjB' \
+    'hMzQxYTI3ODciLCJzdWIiOiI0MjUxMzAiLCJzY29wZSI6WyJvcGVuaWQiLCJ1YWEucmVzb3VyY2' \
+    'UiXSwiZXh0X2F0dHIiOnsiemRuIjoicGFhcyJ9LCJjbGllbnRfaWQiOiJzYi14c3NlY3Rlc3QiL' \
+    'CJjaWQiOiJzYi14c3NlY3Rlc3QiLCJhenAiOiJzYi14c3NlY3Rlc3QiLCJncmFudF90eXBlIjoi' \
+    'cGFzc3dvcmQiLCJ1c2VyX2lkIjoiNDI1MTMwIiwidXNlcl9uYW1lIjoiTk9ERVRFU1RVU0VSIiw' \
+    'iZW1haWwiOiJOb2RldGVzdEBzYXAuY29tIiwiZ2l2ZW5fbmFtZSI6Ik5vZGV0ZXN0Rmlyc3ROYW' \
+    '1lIiwiZmFtaWx5X25hbWUiOiJOb2RldGVzdExhc3ROYW1lIiwib3JpZ2luIjoidGVzdGlkcCIsI' \
+    'mlhdCI6MTQ3MDgxNTQzNCwiZXhwIjoyMTAxNTM1NDM0LCJpc3MiOiJodHRwOi8vcGFhcy5sb2Nh' \
+    'bGhvc3Q6ODA4MC91YWEvb2F1dGgvdG9rZW4iLCJ6aWQiOiJ0ZXN0LWlkeiIsImhkYi5uYW1lZHV' \
+    'zZXIuc2FtbCI6Ijw_eG1sIHZlcnNpb249XCIxLjBcIiBlbmNvZGluZz1cIlVURi04XCI_PjxzYW' \
+    '1sMjpBc3NlcnRpb24geG1sbnM6c2FtbDI9XCJ1cm46b2FzaXM6bmFtZXM6dGM6U0FNTDoyLjA6Y' \
+    'XNzZXJ0aW9uXCIgSUQ9XCJfNzFlZTE3NzYtOWQyZi00OTczLWFjYTgtOWUyMmIyOTY3YWM4XCIg' \
+    'SXNzdWVJbnN0YW50PVwiMjAxNi0wOC0xMFQwNzo0NTozNC4zNDdaXCIgVmVyc2lvbj1cIjIuMFw' \
+    'iPjxzYW1sMjpJc3N1ZXI-VFNULXNhbWw8L3NhbWwyOklzc3Vlcj48ZHM6U2lnbmF0dXJlIHhtbG' \
+    '5zOmRzPVwiaHR0cDovL3d3dy53My5vcmcvMjAwMC8wOS94bWxkc2lnI1wiPjxkczpTaWduZWRJb' \
+    'mZvPjxkczpDYW5vbmljYWxpemF0aW9uTWV0aG9kIEFsZ29yaXRobT1cImh0dHA6Ly93d3cudzMu' \
+    'b3JnLzIwMDEvMTAveG1sLWV4Yy1jMTRuI1wiLz48ZHM6U2lnbmF0dXJlTWV0aG9kIEFsZ29yaXR' \
+    'obT1cImh0dHA6Ly93d3cudzMub3JnLzIwMDAvMDkveG1sZHNpZyNyc2Etc2hhMVwiLz48ZHM6Um' \
+    'VmZXJlbmNlIFVSST1cIiNfNzFlZTE3NzYtOWQyZi00OTczLWFjYTgtOWUyMmIyOTY3YWM4XCI-P' \
+    'GRzOlRyYW5zZm9ybXM-PGRzOlRyYW5zZm9ybSBBbGdvcml0aG09XCJodHRwOi8vd3d3LnczLm9y' \
+    'Zy8yMDAwLzA5L3htbGRzaWcjZW52ZWxvcGVkLXNpZ25hdHVyZVwiLz48ZHM6VHJhbnNmb3JtIEF' \
+    'sZ29yaXRobT1cImh0dHA6Ly93d3cudzMub3JnLzIwMDEvMTAveG1sLWV4Yy1jMTRuI1wiLz48L2' \
+    'RzOlRyYW5zZm9ybXM-PGRzOkRpZ2VzdE1ldGhvZCBBbGdvcml0aG09XCJodHRwOi8vd3d3LnczL' \
+    'm9yZy8yMDAwLzA5L3htbGRzaWcjc2hhMVwiLz48ZHM6RGlnZXN0VmFsdWU-b3U4cjNSMFdCSEcx' \
+    'YnA0S0tPeDFQeVZPaVlBPTwvZHM6RGlnZXN0VmFsdWU-PC9kczpSZWZlcmVuY2U-PC9kczpTaWd' \
+    'uZWRJbmZvPjxkczpTaWduYXR1cmVWYWx1ZT5MYlJLdjFyL2g3SU1taVN5eDEwV2tNN0p1ZWtybX' \
+    'd5Vk5zQjUzcGtGUm5yakNHV3RtRmtRc2tuc0w3ZVRVTjQrZ2NKR1cwcUdUVW12VWtmWEUxTzhyZ' \
+    'jJDbVRjQzAxY1lzR0FaV2JOcE9MTm1wUDlnRzY1NzJwdmVScWpUWExHU2lsTTJlakppeWxxMkpu' \
+    'RkxoWHBncm5UYkN2UVc2YTlKVHBScHZNejhTaVNvZHhheDdySnc3QzB5WnpVcTg2Mk01eU5qZG9' \
+    'JSGhFa25nTWNDNUxERGhmcGY2VGtRTXN5VmNNYW1EcWpUUzdXVGd2a1FLbDVwa09QS0V1aFRqQ1' \
+    'I3UDdLQWVrZURtWW9xczd5RVpycmRLRWl4U1k0aTVGM3dlTStkdytBMXVlOWpGMkttZVJ2am94c' \
+    'zJod2ZzV3dVdkN4eSsySmhyNTR2YXRtd2VHOGRJMFE9PTwvZHM6U2lnbmF0dXJlVmFsdWU-PC9k' \
+    'czpTaWduYXR1cmU-PHNhbWwyOlN1YmplY3Q-PHNhbWwyOk5hbWVJRCBGb3JtYXQ9XCJ1cm46b2F' \
+    'zaXM6bmFtZXM6dGM6U0FNTDoxLjE6bmFtZWlkLWZvcm1hdDp1bnNwZWNpZmllZFwiPk5PREVURV' \
+    'NUVVNFUjwvc2FtbDI6TmFtZUlEPjxzYW1sMjpTdWJqZWN0Q29uZmlybWF0aW9uIE1ldGhvZD1cI' \
+    'nVybjpvYXNpczpuYW1lczp0YzpTQU1MOjIuMDpjbTpiZWFyZXJcIj48c2FtbDI6U3ViamVjdENv' \
+    'bmZpcm1hdGlvbkRhdGEgTm90T25PckFmdGVyPVwiMjAxNi0wOC0xMFQxMTo1MDozNC4zNDdaXCI' \
+    'vPjwvc2FtbDI6U3ViamVjdENvbmZpcm1hdGlvbj48L3NhbWwyOlN1YmplY3Q-PHNhbWwyOkNvbm' \
+    'RpdGlvbnMgTm90QmVmb3JlPVwiMjAxNi0wOC0xMFQwNzo0NTozNC4zNDdaXCIgTm90T25PckFmd' \
+    'GVyPVwiMjAxNi0wOC0xMFQxMTo1MDozNC4zNDdaXCIvPjxzYW1sMjpBdXRoblN0YXRlbWVudCBB' \
+    'dXRobkluc3RhbnQ9XCIyMDE2LTA4LTEwVDA3OjUwOjM0LjM0N1pcIiBTZXNzaW9uTm90T25PckF' \
+    'mdGVyPVwiMjAxNi0wOC0xMFQwNzo1NTozNC4zNDdaXCI-PHNhbWwyOkF1dGhuQ29udGV4dD48c2' \
+    'FtbDI6QXV0aG5Db250ZXh0Q2xhc3NSZWY-dXJuOm9hc2lzOm5hbWVzOnRjOlNBTUw6Mi4wOmFjO' \
+    'mNsYXNzZXM6UGFzc3dvcmQ8L3NhbWwyOkF1dGhuQ29udGV4dENsYXNzUmVmPjwvc2FtbDI6QXV0' \
+    'aG5Db250ZXh0Pjwvc2FtbDI6QXV0aG5TdGF0ZW1lbnQ-PC9zYW1sMjpBc3NlcnRpb24-IiwiYXV' \
+    'kIjpbInNiLXhzc2VjdGVzdCIsIm9wZW5pZCJdfQ.u4GWH7-e-jI368DDEFSfmaBLcsPa1Vdd37HtUe7BV4Q'
 
 CORRECT_END_USER_TOKEN_NAMES_IN_EXT_ATTR = \
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImprdSI6Imh0dHBzOi8vYXBpLmNmLnRlc3QuY29t' \
