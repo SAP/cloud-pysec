@@ -202,22 +202,19 @@ class XSSECTest(unittest.TestCase):
         self.assertIsNotNone(sec_context.get_hdb_token())
         self.assertIsNotNone(sec_context.get_app_token())
 
-    # TBD :After foriegn mode decision is made
-    # def test_valid_end_user_token_in_foreign_mode_clientid(self):
-    #     ''' valid end-user token in foreign mode (clientid - correct SAP_JWT_TRUST_ACL) '''
-    #     self._check_token_in_foreign_mode(
-    #         'sb-xssectest', 'test-idz', 'uaa_foreign_clientid')
+    def test_valid_end_user_token_in_foreign_mode_clientid(self):
+        ''' valid end-user token in foreign mode (clientid - correct SAP_JWT_TRUST_ACL) '''
+        self._check_token_in_foreign_mode(
+            'sb-xssectest', 'test-idz', 'uaa_foreign_clientid')
 
-    # TBD :After foriegn mode decision is made
-    # def test_valid_end_user_token_in_foreign_mode_idz_and_clientid(self):
-    #     ''' valid end-user token in foreign mode (idz & clientid - correct SAP_JWT_TRUST_ACL) '''
-    #     self._check_token_in_foreign_mode(
-    #         'sb-xssectest', 'test-idz', 'uaa_foreign_idz_clientid')
+    def test_valid_end_user_token_in_foreign_mode_idz_and_clientid(self):
+        ''' valid end-user token in foreign mode (idz & clientid - correct SAP_JWT_TRUST_ACL) '''
+        self._check_token_in_foreign_mode(
+            'sb-xssectest', 'test-idz', 'uaa_foreign_idz_clientid')
 
-    # TBD :After foriegn mode decision is made
-    # def test_valid_end_user_token_in_foreign_mode_idz_and_clientid_with_star(self):
-    #     ''' valid end-user token in foreign mode (idz & clientid in SAP_JWT_TRUST_ACL with *) '''
-    #     self._check_token_in_foreign_mode('*', '*', 'uaa_foreign_idz_clientid')
+    def test_valid_end_user_token_in_foreign_mode_idz_and_clientid_with_star(self):
+        ''' valid end-user token in foreign mode (idz & clientid in SAP_JWT_TRUST_ACL with *) '''
+        self._check_token_in_foreign_mode('*', '*', 'uaa_foreign_idz_clientid')
 
     def _check_token_in_foreign_mode_error(self, cid, idz, uaa_config_name):
         environ['SAP_JWT_TRUST_ACL'] = json.dumps([{
