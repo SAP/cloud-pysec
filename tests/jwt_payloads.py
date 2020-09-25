@@ -73,6 +73,11 @@ USER_TOKEN_SCOPE_UAA_USER = {
     ]
 }
 
+USER_TOKEN_EXPIRED = {
+    **USER_TOKEN,
+    "exp": 946684800,
+}
+
 USER_SAML_BEARER_TOKEN = {
     **USER_TOKEN,
     "scope": [

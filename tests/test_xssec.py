@@ -166,6 +166,16 @@ class XSSECTest(unittest.TestCase):
         self.assertEqual(
             sec_context.get_family_name(), 'NodetestLastNameExtAttr')
 
+    def test_expired_end_user_token(self):
+        ''' Test expired end-user token '''
+        with self.assertRaises(RuntimeError) as ctx:
+            xssec.create_security_context(
+                sign(jwt_payloads.USER_TOKEN_EXPIRED), uaa_configs.VALID['uaa'])
+        self.assertTrue(
+            'Error in offline validation of access token:' in str(ctx.exception) and
+            'expired' in str(ctx.exception)
+        )
+
     def test_invalid_signature_end_user_token(self):
         ''' Test invalid signature end-user token '''
         token_parts = sign(jwt_payloads.USER_TOKEN).split('.')
