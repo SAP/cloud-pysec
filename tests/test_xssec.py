@@ -171,7 +171,7 @@ class XSSECTest(unittest.TestCase):
     def test_valid_end_user_token_with_ext_attr(self):
         ''' Test valid end-user token (given_name/family_name in ext_attr) '''
         sec_context = xssec.create_security_context(
-            jwt_payloads.CORRECT_END_USER_TOKEN_NAMES_IN_EXT_ATTR, uaa_configs.VALID['uaa'])
+            token(jwt_payloads.USER_TOKEN_NAMES_IN_EXT_ATTR_PAYLOAD), uaa_configs.VALID['uaa'])
         self.assertEqual(
             sec_context.get_given_name(), 'NodetestFirstNameExtAttr')
         self.assertEqual(
