@@ -1,6 +1,13 @@
 # pylint: disable=line-too-long
 ''' Test jwt tokens '''
 
+
+def merge(dict1, dict2):
+    result = dict1.copy()
+    result.update(dict2)
+    return result
+
+
 USER_TOKEN = {
     "jti": "c6831125-1ed6-41b0-8ea8-e60a341a2787",
     "sub": "425130",
@@ -48,51 +55,45 @@ USER_TOKEN = {
     ]
 }
 
-USER_TOKEN_NO_ATTR = {
-    **USER_TOKEN,
+USER_TOKEN_NO_ATTR = merge(USER_TOKEN, {
     "ext_attr": {
         "zdn": "paas"
     },
     "xs.user.attributes": None
-}
+})
 
-USER_TOKEN_NAMES_IN_EXT_ATTR = {
-    **USER_TOKEN,
+USER_TOKEN_NAMES_IN_EXT_ATTR = merge(USER_TOKEN, {
     "ext_attr": {
         "given_name": "NodetestFirstNameExtAttr",
         "family_name": "NodetestLastNameExtAttr"
     }
-}
+})
 
-USER_TOKEN_SCOPE_UAA_USER = {
-    **USER_TOKEN,
+USER_TOKEN_SCOPE_UAA_USER = merge(USER_TOKEN, {
     "scope": [
         "openid",
         "uaa.user",
         "uaa.resource"
     ]
-}
+})
 
-USER_TOKEN_EXPIRED = {
-    **USER_TOKEN,
+USER_TOKEN_EXPIRED = merge(USER_TOKEN, {
     "exp": 946684800,
-}
+})
 
-USER_SAML_BEARER_TOKEN = {
-    **USER_TOKEN,
+USER_SAML_BEARER_TOKEN = merge(USER_TOKEN, {
     "scope": [
         "openid"
     ],
     "grant_type": "urn:ietf:params:oauth:grant-type:saml2-bearer",
     "ext_attr": None
-}
+})
 
-USER_APPLICATION_PLAN_TOKEN = {
-    **USER_TOKEN,
+USER_APPLICATION_PLAN_TOKEN = merge(USER_TOKEN, {
     "client_id": "sb-xssectest!t4",
     "cid": "sb-xssectest!t4",
     "ext_attr": {},
-}
+})
 
 INVALID_TRUSTED_APPLICATION_PLAN_TOKEN = {
     "jti": "a3b643f88e964bcab2f7e996db4b5183",
@@ -159,20 +160,18 @@ CLIENT_CREDENTIALS_TOKEN = {
     }
 }
 
-CLIENT_CREDENTIALS_TOKEN_NO_ATTR = {
-    **CLIENT_CREDENTIALS_TOKEN,
+CLIENT_CREDENTIALS_TOKEN_NO_ATTR = merge(CLIENT_CREDENTIALS_TOKEN, {
     "ext_attr": {},
     "az_attr": None,
     "xs.system.attributes": None,
     "xs.user.attributes": None
-}
+})
 
-CLIENT_CREDENTIALS_BROKER_PLAN_TOKEN = {
-    **CLIENT_CREDENTIALS_TOKEN,
+CLIENT_CREDENTIALS_BROKER_PLAN_TOKEN = merge(CLIENT_CREDENTIALS_TOKEN, {
     "client_id": "sb-xssectestclone!b4|sb-xssectest!b4",
     "cid": "sb-xssectestclone!b4|sb-xssectest!b4",
     "ext_attr": {}
-}
+})
 
 TOKEN_NEW_FORMAT = {
     "jti": "6c0072fd01fb440b86f8a23bf91612b4-r",
