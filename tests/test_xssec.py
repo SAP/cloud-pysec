@@ -3,14 +3,17 @@ import unittest
 import json
 from os import environ
 from datetime import datetime
+
+import jwt
 from parameterized import parameterized_class
 
 from sap import xssec
 from sap.xssec import constants, jwt_validation_facade, security_context
 from sap.conf import config
 from tests import uaa_configs
-from tests import jwt_tokens
+from tests import jwt_payloads
 from tests.http_responses import HTTP_SUCCESS
+from tests.keys import PRIVATE_KEY
 
 try:
     from importlib import reload
@@ -20,6 +23,14 @@ except ImportError:
 
 # test with sap-jwt if installed
 TEST_PARAMETERS = [(False,), (True,)]
+
+
+def token(payload):
+    payload = {k: payload[k] for k in payload if payload[k] is not None}
+    return jwt.encode(payload, PRIVATE_KEY, algorithm="RS256", headers={
+        "jku": "https://api.cf.test.com",
+        "kid": "key-id-0"
+    }).decode("utf-8")
 
 
 #@parameterized_class(('USE_SAP_PY_JWT',), TEST_PARAMETERS)
@@ -140,7 +151,7 @@ class XSSECTest(unittest.TestCase):
     def test_valid_end_user_token_with_attr(self):
         ''' Test valid end-user token with attributes '''
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa'])
+            token(jwt_payloads.USER_TOKEN_PAYLOAD), uaa_configs.VALID['uaa'])
         self._check_user_token(sec_context)
         self.assertTrue(sec_context.has_attributes())
         self.assertEqual(sec_context.get_attribute('country'), ['USA'])
@@ -152,7 +163,7 @@ class XSSECTest(unittest.TestCase):
     def test_valid_end_user_token_no_attr(self):
         ''' Test valid end-user token no attributes '''
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_END_USER_TOKEN_NO_ATTR, uaa_configs.VALID['uaa'])
+            token(jwt_payloads.USER_TOKEN_NO_ATTR_PAYLOAD), uaa_configs.VALID['uaa'])
         self._check_user_token(sec_context)
         self.assertFalse(sec_context.has_attributes())
         self.assertIsNone(sec_context.get_clone_service_instance_id())
@@ -160,7 +171,7 @@ class XSSECTest(unittest.TestCase):
     def test_valid_end_user_token_with_ext_attr(self):
         ''' Test valid end-user token (given_name/family_name in ext_attr) '''
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_END_USER_TOKEN_NAMES_IN_EXT_ATTR, uaa_configs.VALID['uaa'])
+            jwt_payloads.CORRECT_END_USER_TOKEN_NAMES_IN_EXT_ATTR, uaa_configs.VALID['uaa'])
         self.assertEqual(
             sec_context.get_given_name(), 'NodetestFirstNameExtAttr')
         self.assertEqual(
@@ -170,7 +181,7 @@ class XSSECTest(unittest.TestCase):
         ''' Test invalid signature end-user token '''
         with self.assertRaises(RuntimeError) as ctx:
             xssec.create_security_context(
-                jwt_tokens.INVALID_SIGNATURE_END_USER_TOKEN, uaa_configs.VALID['uaa'])
+                jwt_payloads.INVALID_SIGNATURE_END_USER_TOKEN, uaa_configs.VALID['uaa'])
         self.assertTrue(
             'Error in offline validation of access token:' in str(ctx.exception))
 
@@ -178,7 +189,7 @@ class XSSECTest(unittest.TestCase):
         ''' valid end-user token in foreign mode (idz - correct SAP_JWT_TRUST_ACL) '''
         environ['SAP_JWT_TRUST_ACL'] = '[{"clientid":"sb-xssectest","identityzone":"test-idz"}]'
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_foreign_idz'])
+            jwt_payloads.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_foreign_idz'])
         self.assertTrue(sec_context.is_in_foreign_mode())
         self.assertEqual(
             sec_context.get_additional_auth_attribute('external_group'), 'domaingroup1')
@@ -196,7 +207,7 @@ class XSSECTest(unittest.TestCase):
             'identityzone': idz
         }])
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_END_USER_TOKEN_NO_ATTR, uaa_configs.VALID[uaa_config_name])
+            jwt_payloads.CORRECT_END_USER_TOKEN_NO_ATTR, uaa_configs.VALID[uaa_config_name])
         self.assertTrue(sec_context.is_in_foreign_mode())
         self.assertIsNotNone(sec_context.get_hdb_token())
         self.assertIsNotNone(sec_context.get_app_token())
@@ -225,7 +236,7 @@ class XSSECTest(unittest.TestCase):
         }])
         with self.assertRaises(RuntimeError) as ctx:
             xssec.create_security_context(
-                jwt_tokens.CORRECT_END_USER_TOKEN_NO_ATTR, uaa_configs.VALID[uaa_config_name])
+                jwt_payloads.CORRECT_END_USER_TOKEN_NO_ATTR, uaa_configs.VALID[uaa_config_name])
         self.assertTrue(str(ctx.exception).startswith(
             'No match found in JWT trust ACL (SAP_JWT_TRUST_ACL)'))
 
@@ -242,7 +253,7 @@ class XSSECTest(unittest.TestCase):
     def test_valid_end_user_saml_bearer_token(self):
         ''' valid end-user saml bearer token '''
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_END_USER_SAML_BEARER_TOKEN, uaa_configs.VALID['uaa_bearer'])
+            jwt_payloads.CORRECT_END_USER_SAML_BEARER_TOKEN, uaa_configs.VALID['uaa_bearer'])
         self.assertTrue(sec_context.check_scope('openid'))
         self._check_user_info(sec_context)
         self._check_hdb_token(sec_context)
@@ -257,7 +268,7 @@ class XSSECTest(unittest.TestCase):
     def test_valid_end_user_application_plan_token(self):
         ''' valid end-user application plan token '''
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_END_USER_APPLICATION_PLAN_TOKEN,
+            jwt_payloads.CORRECT_END_USER_APPLICATION_PLAN_TOKEN,
             uaa_configs.VALID['uaa_application_plan'])
 
         self.assertTrue(sec_context.check_scope('openid'))
@@ -308,7 +319,7 @@ class XSSECTest(unittest.TestCase):
     def test_valid_client_credentials_token_attributes(self):
         ''' valid client credentials token (with attributes) '''
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_CLIENT_CREDENTIALS_TOKEN,
+            jwt_payloads.CORRECT_CLIENT_CREDENTIALS_TOKEN,
             uaa_configs.VALID['uaa_cc'])
         self._check_client_credentials_token(sec_context)
         self.assertEqual(
@@ -319,7 +330,7 @@ class XSSECTest(unittest.TestCase):
     def test_valid_client_credentials_token_no_attributes(self):
         ''' valid client credentials token (no attributes) '''
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_CLIENT_CREDENTIALS_TOKEN_NO_ATTR,
+            jwt_payloads.CORRECT_CLIENT_CREDENTIALS_TOKEN_NO_ATTR,
             uaa_configs.VALID['uaa_cc'])
         self._check_client_credentials_token(sec_context)
         self.assertIsNone(
@@ -327,7 +338,7 @@ class XSSECTest(unittest.TestCase):
 
     def _check_client_credentials_broker_plan(self):
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_CLIENT_CREDENTIALS_BROKER_PLAN_TOKEN,
+            jwt_payloads.CORRECT_CLIENT_CREDENTIALS_BROKER_PLAN_TOKEN,
             uaa_configs.VALID['uaa_broker_plan'])
         self.assertTrue(sec_context.check_scope('$XSAPPNAME.resource'))
         self.assertTrue(sec_context.check_scope('uaa.resource'))
@@ -360,7 +371,7 @@ class XSSECTest(unittest.TestCase):
         ''' valid client credentials broker plan token with wrong trustedclientidsuffix '''
         with self.assertRaises(RuntimeError) as ctx:
             xssec.create_security_context(
-                jwt_tokens.CORRECT_CLIENT_CREDENTIALS_BROKER_PLAN_TOKEN,
+                jwt_payloads.CORRECT_CLIENT_CREDENTIALS_BROKER_PLAN_TOKEN,
                 uaa_configs.INVALID['uaa_broker_plan_wrong_suffix'])
         self.assertEqual(
             'Missmatch of client id and/or identityzone id. No JWT trust ACL (SAP_JWT_TRUST_ACL) specified in environment. '
@@ -375,7 +386,7 @@ class XSSECTest(unittest.TestCase):
             'identityzone': '*'
         }])
         sec_context = xssec.create_security_context(
-            jwt_tokens.INVALID_TRUSTED_APPLICATION_PLAN_TOKEN,
+            jwt_payloads.INVALID_TRUSTED_APPLICATION_PLAN_TOKEN,
             uaa_configs.INVALID['uaa_broker_plan_wrong_suffix'])
         self.assertEqual('sb-tenant-test!t13',sec_context.get_clientid())
         self.assertEqual('api', sec_context.get_identity_zone())
@@ -389,7 +400,7 @@ class XSSECTest(unittest.TestCase):
         }])
         with self.assertRaises(RuntimeError) as ctx:
             sec_context = xssec.create_security_context(
-                jwt_tokens.INVALID_TRUSTED_APPLICATION_PLAN_TOKEN,
+                jwt_payloads.INVALID_TRUSTED_APPLICATION_PLAN_TOKEN,
                 uaa_configs.INVALID['uaa_broker_plan_wrong_suffix'])
         self.assertTrue(str(ctx.exception).startswith(
                 'No match found in JWT trust ACL (SAP_JWT_TRUST_ACL)'))
@@ -397,18 +408,18 @@ class XSSECTest(unittest.TestCase):
     def test_token_with_ext_cxt(self):
         ''' valid user token with "ext_cxt" property '''
         sec_context = xssec.create_security_context(
-            jwt_tokens.TOKEN_NEW_FORMAT,
+            jwt_payloads.TOKEN_NEW_FORMAT,
             uaa_configs.VALID['uaa_new_token_structure'])
         self._check_hdb_token(sec_context)
         jobsheduler_token = sec_context.get_token(
             xssec.constants.SYSTEM, xssec.constants.JOBSCHEDULER)
-        self.assertEqual(jobsheduler_token, jwt_tokens.TOKEN_NEW_FORMAT)
+        self.assertEqual(jobsheduler_token, jwt_payloads.TOKEN_NEW_FORMAT)
         self.assertNotEqual(sec_context.get_hdb_token(), jobsheduler_token)
 
     def test_get_token_with_invalid_parameters(self):
         ''' valid user token with "ext_cxt" property '''
         sec_context = xssec.create_security_context(
-            jwt_tokens.TOKEN_NEW_FORMAT,
+            jwt_payloads.TOKEN_NEW_FORMAT,
             uaa_configs.VALID['uaa_new_token_structure'])
         self._check_hdb_token(sec_context)
         self.assertIsNone(sec_context.get_token('invalid', xssec.constants.JOBSCHEDULER))
@@ -418,7 +429,7 @@ class XSSECTest(unittest.TestCase):
         ''' valid user token with "ext_cxt" property, invalid validation key '''
         with self.assertRaises(RuntimeError) as ctx:
             xssec.create_security_context(
-                jwt_tokens.TOKEN_NEW_FORMAT,
+                jwt_payloads.TOKEN_NEW_FORMAT,
                 uaa_configs.INVALID['uaa_verificationkey_invalid'])
         self.assertTrue(
             'Error in offline validation of access token:' in str(ctx.exception))
@@ -433,7 +444,7 @@ class XSSECTest(unittest.TestCase):
         mock.json.return_value = HTTP_SUCCESS
 
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key'])
+            jwt_payloads.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key'])
         self._check_user_token(sec_context)
         self.assertTrue(sec_context.has_attributes())
         self.assertEqual(sec_context.get_attribute('country'), ['USA'])
@@ -446,14 +457,14 @@ class XSSECTest(unittest.TestCase):
     def test_not_trusted_jku(self):
 
         with self.assertRaises(RuntimeError) as e:
-            xssec.create_security_context(jwt_tokens.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key_other_domain'])
+            xssec.create_security_context(jwt_payloads.CORRECT_END_USER_TOKEN, uaa_configs.VALID['uaa_no_verification_key_other_domain'])
 
         self.assertEqual("JKU of token is not trusted", str(e.exception),)
 
     def test_valid_xsa_token_attributes(self):
         ''' valid client credentials token (with attributes) '''
         sec_context = xssec.create_security_context(
-            jwt_tokens.TOKEN_XSA_FORMAT,
+            jwt_payloads.TOKEN_XSA_FORMAT,
             uaa_configs.VALID['uaa_xsa_environment'])
         self.assertEqual(
             sec_context.get_logon_name(), 'ADMIN')
@@ -462,7 +473,7 @@ class XSSECTest(unittest.TestCase):
     def test_valid_xsa_token_with_newlines(self):
         ''' valid client credentials token (with attributes) '''
         sec_context = xssec.create_security_context(
-            jwt_tokens.TOKEN_XSA_FORMAT,
+            jwt_payloads.TOKEN_XSA_FORMAT,
             uaa_configs.VALID['uaa_xsa_with_newlines'])
         self.assertEqual(
             sec_context.get_logon_name(), 'ADMIN')
