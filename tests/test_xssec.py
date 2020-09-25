@@ -3,9 +3,7 @@ import unittest
 import json
 from os import environ
 from datetime import datetime
-
 from parameterized import parameterized_class
-
 from sap import xssec
 from sap.xssec import constants, jwt_validation_facade, security_context
 from sap.conf import config
@@ -24,7 +22,7 @@ except ImportError:
 TEST_PARAMETERS = [(False,), (True,)]
 
 
-#@parameterized_class(('USE_SAP_PY_JWT',), TEST_PARAMETERS)
+@parameterized_class(('USE_SAP_PY_JWT',), TEST_PARAMETERS)
 class XSSECTest(unittest.TestCase):
 
     @classmethod
@@ -36,7 +34,7 @@ class XSSECTest(unittest.TestCase):
         if 'SAP_JWT_TRUST_ACL' in environ:
             del environ['SAP_JWT_TRUST_ACL']
 
-        # config.USE_SAP_PY_JWT = self.USE_SAP_PY_JWT
+        config.USE_SAP_PY_JWT = self.USE_SAP_PY_JWT
         # reloads needed to propagate changes to USE_SAP_PY_JWT
         reload(jwt_validation_facade)
         reload(security_context)
@@ -206,22 +204,19 @@ class XSSECTest(unittest.TestCase):
         self.assertIsNotNone(sec_context.get_hdb_token())
         self.assertIsNotNone(sec_context.get_app_token())
 
-    # TBD :After foriegn mode decision is made
-    # def test_valid_end_user_token_in_foreign_mode_clientid(self):
-    #     ''' valid end-user token in foreign mode (clientid - correct SAP_JWT_TRUST_ACL) '''
-    #     self._check_token_in_foreign_mode(
-    #         'sb-xssectest', 'test-idz', 'uaa_foreign_clientid')
+    def test_valid_end_user_token_in_foreign_mode_clientid(self):
+        ''' valid end-user token in foreign mode (clientid - correct SAP_JWT_TRUST_ACL) '''
+        self._check_token_in_foreign_mode(
+            'sb-xssectest', 'test-idz', 'uaa_foreign_clientid')
 
-    # TBD :After foriegn mode decision is made
-    # def test_valid_end_user_token_in_foreign_mode_idz_and_clientid(self):
-    #     ''' valid end-user token in foreign mode (idz & clientid - correct SAP_JWT_TRUST_ACL) '''
-    #     self._check_token_in_foreign_mode(
-    #         'sb-xssectest', 'test-idz', 'uaa_foreign_idz_clientid')
+    def test_valid_end_user_token_in_foreign_mode_idz_and_clientid(self):
+        ''' valid end-user token in foreign mode (idz & clientid - correct SAP_JWT_TRUST_ACL) '''
+        self._check_token_in_foreign_mode(
+            'sb-xssectest', 'test-idz', 'uaa_foreign_idz_clientid')
 
-    # TBD :After foriegn mode decision is made
-    # def test_valid_end_user_token_in_foreign_mode_idz_and_clientid_with_star(self):
-    #     ''' valid end-user token in foreign mode (idz & clientid in SAP_JWT_TRUST_ACL with *) '''
-    #     self._check_token_in_foreign_mode('*', '*', 'uaa_foreign_idz_clientid')
+    def test_valid_end_user_token_in_foreign_mode_idz_and_clientid_with_star(self):
+        ''' valid end-user token in foreign mode (idz & clientid in SAP_JWT_TRUST_ACL with *) '''
+        self._check_token_in_foreign_mode('*', '*', 'uaa_foreign_idz_clientid')
 
     def _check_token_in_foreign_mode_error(self, cid, idz, uaa_config_name):
         environ['SAP_JWT_TRUST_ACL'] = json.dumps([{
@@ -471,3 +466,13 @@ class XSSECTest(unittest.TestCase):
             uaa_configs.VALID['uaa_xsa_with_newlines'])
         self.assertEqual(
             sec_context.get_logon_name(), 'ADMIN')
+
+    def test_invalid_jku_in_token_header(self):
+        uaa_config = uaa_configs.VALID['uaa']
+        token = sign(jwt_payloads.USER_TOKEN, headers={
+            "jku": 'http://ana.ondemandh.com\\\\\\\\\\\\\\\\@' + uaa_config['uaadomain'],
+            "kid": "key-id-0"
+        })
+        with self.assertRaises(RuntimeError) as e:
+            xssec.create_security_context(token, uaa_config)
+        self.assertEqual("JKU of token is not trusted", str(e.exception),)

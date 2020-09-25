@@ -5,6 +5,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 2.0.11
+
+### Added
+- Support for zone_id and zid.
+
+### Fixed
+- Improved jku validation
+
 ## 2.0.10
 
 ### Changed

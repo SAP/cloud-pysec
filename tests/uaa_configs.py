@@ -42,6 +42,7 @@ INVALID = {
         'clientid': 'sb-xssectest!t4',
         'verificationkey': PUBLIC_KEY,
         'xsappname': "sb-tenant-test!t13",
+
         'identityzone': 'test-idz',
         'trustedclientidsuffix': 'hugo',
         'clientsecret': 'z431EZmJWiuA/yINKXGewGR/wo99JKiVKAzG7yRyUHldI'
