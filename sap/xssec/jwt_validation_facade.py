@@ -55,6 +55,9 @@ class JwtValidationFacade(object):
             except jwt.exceptions.InvalidTokenError as e:
                 self._error_desc = str(e)
                 self._error_code = 1
+            except ValueError as e:
+                self._error_desc = str(e)
+                self._error_code = 1
 
     def getErrorDescription(self):
         if USE_SAP_PY_JWT:
