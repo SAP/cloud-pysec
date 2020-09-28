@@ -316,7 +316,7 @@ class SecurityContext(object):
 
     def _offline_validation(self):
         jwt_payload = self._validate_token()
-        self._set_foreign_mode(jwt_payload)
+        # self._set_foreign_mode(jwt_payload)
         self._set_grant_type(jwt_payload)
         self._set_origin(jwt_payload)
         self._properties['clientid'] = jwt_payload['cid']
