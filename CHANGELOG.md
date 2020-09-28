@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 2.0.12
+
+### Fixed
+- Bug: wrong variable name used for debug logging during token validation
+
 ## 2.0.11
 
 ### Added
