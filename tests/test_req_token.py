@@ -9,7 +9,8 @@ from sap.xssec import jwt_validation_facade
 
 from sap import xssec
 from tests import uaa_configs
-from tests import jwt_tokens
+from tests import jwt_payloads
+from tests.jwt_tools import sign
 
 TEST_SERVER_POLL_ATTEMPTS = 10
 
@@ -84,14 +85,14 @@ class ReqTokenForClientTest(unittest.TestCase):
         request_token_for_client failure, scope uaa.user missing
         '''
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_END_USER_TOKEN_NO_ATTR, uaa_configs.VALID['uaa'])
+            sign(jwt_payloads.USER_TOKEN_NO_ATTR), uaa_configs.VALID['uaa'])
         self._request_token_for_client_error(
             sec_context, flask_url + '/500',
             'JWT token does not include scope "uaa.user"')
 
     def test_req_client_for_user_401_error(self):
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_END_USER_TOKEN_SCOPE_UAA_USER, uaa_configs.VALID['uaa'])
+            sign(jwt_payloads.USER_TOKEN_SCOPE_UAA_USER), uaa_configs.VALID['uaa'])
         expected_message = \
             'Bearer token invalid, requesting client does'\
             ' not have grant_type=user_token or no scopes were granted.'
@@ -101,13 +102,13 @@ class ReqTokenForClientTest(unittest.TestCase):
 
     def test_req_client_for_user_500_error(self):
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_END_USER_TOKEN_SCOPE_UAA_USER, uaa_configs.VALID['uaa'])
+            sign(jwt_payloads.USER_TOKEN_SCOPE_UAA_USER), uaa_configs.VALID['uaa'])
         self._request_token_for_client_error(
             sec_context, flask_url + '/500', 'HTTP status code: 500')
 
     def test_req_client_for_user(self):
         sec_context = xssec.create_security_context(
-            jwt_tokens.CORRECT_END_USER_TOKEN_SCOPE_UAA_USER, uaa_configs.VALID['uaa'])
+            sign(jwt_payloads.USER_TOKEN_SCOPE_UAA_USER), uaa_configs.VALID['uaa'])
         service_credentials = {
             'clientid': 'clientid',
             'clientsecret': 'clientsecret',
