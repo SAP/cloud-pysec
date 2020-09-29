@@ -291,7 +291,7 @@ class XSSECTest(unittest.TestCase):
         self.assertIsNone(sec_context.get_subdomain())
         self.assertFalse(sec_context.is_in_foreign_mode())
 
-    def _check_client_credentials_token(self, sec_context):
+    def _check_client_credentials_token(self, sec_context, expected_subaccount_id='test-idz'):
         self.assertTrue(sec_context.check_scope('$XSAPPNAME.resource'))
         self.assertTrue(sec_context.check_scope('uaa.resource'))
         self.assertFalse(sec_context.check_scope(
@@ -311,7 +311,7 @@ class XSSECTest(unittest.TestCase):
             sec_context.get_grant_type(), xssec.constants.GRANTTYPE_CLIENTCREDENTIAL)
         self.assertEqual(sec_context.get_identity_zone(), 'test-idz')
         self.assertEqual(sec_context.get_zone_id(), 'test-idz')
-        self.assertEqual(sec_context.get_subaccount_id(), 'test-idz')
+        self.assertEqual(sec_context.get_subaccount_id(), expected_subaccount_id)
         self.assertIsNone(sec_context.get_origin())
         self.assertEqual(sec_context.get_clientid(), 'sb-xssectest')
         self.assertFalse(sec_context.is_in_foreign_mode())
@@ -337,6 +337,15 @@ class XSSECTest(unittest.TestCase):
         self._check_client_credentials_token(sec_context)
         self.assertIsNone(
             sec_context.get_additional_auth_attribute('external_group'))
+
+    def test_valid_credentials_token_subaccount(self):
+        ''' valid client credentials token (subaccountid in attributes) '''
+        sec_context = xssec.create_security_context(
+            sign(jwt_payloads.CLIENT_CREDENTIALS_TOKEN_ATTR_SUBACCOUNTID),
+            uaa_configs.VALID['uaa_cc'])
+        # if subaccountid is set, then the "subaccount_id" property is taken
+        # from subaccountid and no longer from the zid field
+        self._check_client_credentials_token(sec_context, expected_subaccount_id='5432')
 
     def _check_client_credentials_broker_plan(self):
         sec_context = xssec.create_security_context(

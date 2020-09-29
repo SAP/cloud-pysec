@@ -173,6 +173,14 @@ CLIENT_CREDENTIALS_BROKER_PLAN_TOKEN = merge(CLIENT_CREDENTIALS_TOKEN, {
     "ext_attr": {}
 })
 
+CLIENT_CREDENTIALS_TOKEN_ATTR_SUBACCOUNTID = merge(CLIENT_CREDENTIALS_TOKEN, {
+    "ext_attr": {
+        "serviceinstanceid": "abcd1234",
+        "zdn": "saas",
+        "subaccountid": "5432",
+    },
+})
+
 TOKEN_NEW_FORMAT = {
     "jti": "6c0072fd01fb440b86f8a23bf91612b4-r",
     "sub": "b5607c1e-5494-4bf3-8305-de35357e0021",
