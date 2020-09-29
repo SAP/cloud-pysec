@@ -316,6 +316,7 @@ class SecurityContext(object):
 
     def _offline_validation(self):
         jwt_payload = self._validate_token()
+        # Remove Foreign Mode Support for Now , Support for SAP_JWT_ACL should be removed.
         # self._set_foreign_mode(jwt_payload)
         self._set_grant_type(jwt_payload)
         self._set_origin(jwt_payload)
