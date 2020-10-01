@@ -11,6 +11,7 @@ from sap import xssec
 from tests import uaa_configs
 from tests import jwt_payloads
 from tests.jwt_tools import sign
+from xssec.constants import GRANTTYPE_JWT_BEARER
 
 TEST_SERVER_POLL_ATTEMPTS = 10
 
@@ -94,8 +95,8 @@ class ReqTokenForClientTest(unittest.TestCase):
         sec_context = xssec.create_security_context(
             sign(jwt_payloads.USER_TOKEN_SCOPE_UAA_USER), uaa_configs.VALID['uaa'])
         expected_message = \
-            'Bearer token invalid, requesting client does'\
-            ' not have grant_type=user_token or no scopes were granted.'
+            'Authorization header invalid, requesting client does'\
+            ' not have grant_type={} or no scopes were granted.'.format(GRANTTYPE_JWT_BEARER)
 
         self._request_token_for_client_error(
             sec_context, flask_url + '/401', expected_message)

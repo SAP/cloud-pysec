@@ -1,7 +1,10 @@
 # pylint: disable=missing-docstring,invalid-name,missing-docstring
 from flask import Flask, request, jsonify
 
+from xssec.constants import GRANTTYPE_JWT_BEARER
+
 app = Flask(__name__)
+
 
 @app.before_request
 def only_accepts_json():
@@ -27,19 +30,15 @@ def return_500():
 
 @app.route('/correct/oauth/token', methods=['POST'])
 def return_token():
-    grant_type = request.args.get('grant_type')
-    authorization = request.headers.get('Authorization')
+    grant_type = request.form.get('grant_type')
+    authorization = request.authorization
     if not authorization:
         return 'No authorization header', 401
+    if authorization.username != 'clientid' or authorization.password != 'clientsecret':
+        return 'Invalid authorization header', 401
+    if grant_type != GRANTTYPE_JWT_BEARER:
+        return 'Invalid grant type', 400
+    return jsonify({'access_token': 'access_token'})
 
-    if grant_type == 'user_token':
-        if authorization.startswith('Bearer'):
-            return jsonify({'refresh_token': 'refresh_token'})
-        return 'Invalid bearer', 401
 
-    if grant_type == 'refresh_token':
-        if authorization == 'Basic Y2xpZW50aWQ6Y2xpZW50c2VjcmV0': # base64(clientid:clientsecret)
-            return jsonify({'access_token': 'access_token'})
-        return 'Invalid basic auth', 401
 
-    return 'Invalid grant_type', 400
