@@ -1,6 +1,6 @@
 import logging
 import time
-from requests import HTTPError, ConnectionError, Timeout
+from requests import HTTPError, Timeout
 
 import requests
 from collections import OrderedDict
