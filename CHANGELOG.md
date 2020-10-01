@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 2.1.0
+
+### Added
+- Support for token audience
+
 ## 2.0.12
 
 ### Fixed

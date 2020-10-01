@@ -187,17 +187,17 @@ class XSSECTest(unittest.TestCase):
         self.assertTrue(
             'Error in offline validation of access token:' in str(ctx.exception))
 
-    def test_valid_end_user_token_in_foreign_mode_idz(self):
-        ''' valid end-user token in foreign mode (idz - correct SAP_JWT_TRUST_ACL) '''
-        environ['SAP_JWT_TRUST_ACL'] = '[{"clientid":"sb-xssectest","identityzone":"test-idz"}]'
-        sec_context = xssec.create_security_context(
-            sign(jwt_payloads.USER_TOKEN), uaa_configs.VALID['uaa_foreign_idz'])
-        self.assertTrue(sec_context.is_in_foreign_mode())
-        self.assertEqual(
-            sec_context.get_additional_auth_attribute('external_group'), 'domaingroup1')
-        self.assertIsNone(sec_context.get_additional_auth_attribute('hugo'))
-        self.assertIsNone(sec_context.get_hdb_token())
-        self.assertIsNotNone(sec_context.get_app_token())
+    # def test_valid_end_user_token_in_foreign_mode_idz(self):
+    #     ''' valid end-user token in foreign mode (idz - correct SAP_JWT_TRUST_ACL) '''
+    #     environ['SAP_JWT_TRUST_ACL'] = '[{"clientid":"sb-xssectest","identityzone":"test-idz"}]'
+    #     sec_context = xssec.create_security_context(
+    #         sign(jwt_payloads.USER_TOKEN), uaa_configs.VALID['uaa_foreign_idz'])
+    #     self.assertTrue(sec_context.is_in_foreign_mode())
+    #     self.assertEqual(
+    #         sec_context.get_additional_auth_attribute('external_group'), 'domaingroup1')
+    #     self.assertIsNone(sec_context.get_additional_auth_attribute('hugo'))
+    #     self.assertIsNone(sec_context.get_hdb_token())
+    #     self.assertIsNotNone(sec_context.get_app_token())
 
     def _check_token_in_foreign_mode(self, cid, idz, uaa_config_name):
         environ['SAP_JWT_TRUST_ACL'] = json.dumps([{
@@ -214,19 +214,22 @@ class XSSECTest(unittest.TestCase):
         self.assertIsNotNone(sec_context.get_hdb_token())
         self.assertIsNotNone(sec_context.get_app_token())
 
-    def test_valid_end_user_token_in_foreign_mode_clientid(self):
-        ''' valid end-user token in foreign mode (clientid - correct SAP_JWT_TRUST_ACL) '''
-        self._check_token_in_foreign_mode(
-            'sb-xssectest', 'test-idz', 'uaa_foreign_clientid')
+    # TBD :After foriegn mode decision is made
+    # def test_valid_end_user_token_in_foreign_mode_clientid(self):
+    #     ''' valid end-user token in foreign mode (clientid - correct SAP_JWT_TRUST_ACL) '''
+    #     self._check_token_in_foreign_mode(
+    #         'sb-xssectest', 'test-idz', 'uaa_foreign_clientid')
 
-    def test_valid_end_user_token_in_foreign_mode_idz_and_clientid(self):
-        ''' valid end-user token in foreign mode (idz & clientid - correct SAP_JWT_TRUST_ACL) '''
-        self._check_token_in_foreign_mode(
-            'sb-xssectest', 'test-idz', 'uaa_foreign_idz_clientid')
+    # TBD :After foriegn mode decision is made
+    # def test_valid_end_user_token_in_foreign_mode_idz_and_clientid(self):
+    #     ''' valid end-user token in foreign mode (idz & clientid - correct SAP_JWT_TRUST_ACL) '''
+    #     self._check_token_in_foreign_mode(
+    #         'sb-xssectest', 'test-idz', 'uaa_foreign_idz_clientid')
 
-    def test_valid_end_user_token_in_foreign_mode_idz_and_clientid_with_star(self):
-        ''' valid end-user token in foreign mode (idz & clientid in SAP_JWT_TRUST_ACL with *) '''
-        self._check_token_in_foreign_mode('*', '*', 'uaa_foreign_idz_clientid')
+    # TBD :After foriegn mode decision is made
+    # def test_valid_end_user_token_in_foreign_mode_idz_and_clientid_with_star(self):
+    #     ''' valid end-user token in foreign mode (idz & clientid in SAP_JWT_TRUST_ACL with *) '''
+    #     self._check_token_in_foreign_mode('*', '*', 'uaa_foreign_idz_clientid')
 
     def _check_token_in_foreign_mode_error(self, cid, idz, uaa_config_name):
         environ['SAP_JWT_TRUST_ACL'] = json.dumps([{
@@ -239,15 +242,15 @@ class XSSECTest(unittest.TestCase):
         self.assertTrue(str(ctx.exception).startswith(
             'No match found in JWT trust ACL (SAP_JWT_TRUST_ACL)'))
 
-    def test_valid_end_user_token_in_foreign_mode_invalid_idz(self):
-        ''' valid end-user token in foreign mode (idz - incorrect SAP_JWT_TRUST_ACL) '''
-        self._check_token_in_foreign_mode_error(
-            'sb-xssectest', 'uaa', 'uaa_foreign_idz')
+    # def test_valid_end_user_token_in_foreign_mode_invalid_idz(self):
+    #     ''' valid end-user token in foreign mode (idz - incorrect SAP_JWT_TRUST_ACL) '''
+    #     self._check_token_in_foreign_mode_error(
+    #         'sb-xssectest', 'uaa', 'uaa_foreign_idz')
 
-    def test_valid_end_user_token_in_foreign_mode_invalid_clientid(self):
-        ''' valid end-user token in foreign mode (clientid - incorrect SAP_JWT_TRUST_ACL) '''
-        self._check_token_in_foreign_mode_error(
-            'foreign-clientid', 'test-idz', 'uaa_foreign_clientid')
+    # def test_valid_end_user_token_in_foreign_mode_invalid_clientid(self):
+    #     ''' valid end-user token in foreign mode (clientid - incorrect SAP_JWT_TRUST_ACL) '''
+    #     self._check_token_in_foreign_mode_error(
+    #         'foreign-clientid', 'test-idz', 'uaa_foreign_clientid')
 
     def test_valid_end_user_saml_bearer_token(self):
         ''' valid end-user saml bearer token '''
@@ -375,17 +378,17 @@ class XSSECTest(unittest.TestCase):
         ''' valid client credentials broker plan token without SAP_JWT_TRUST_ACL '''
         self._check_client_credentials_broker_plan()
 
-    def test_valid_client_credentials_broker_plan_token_with_wrong_trustedclientidsuffix(self):
-        ''' valid client credentials broker plan token with wrong trustedclientidsuffix '''
-        with self.assertRaises(RuntimeError) as ctx:
-            xssec.create_security_context(
-                sign(jwt_payloads.CLIENT_CREDENTIALS_BROKER_PLAN_TOKEN),
-                uaa_configs.INVALID['uaa_broker_plan_wrong_suffix'])
-        self.assertEqual(
-            'Missmatch of client id and/or identityzone id. No JWT trust ACL (SAP_JWT_TRUST_ACL) specified in environment. '
-            'Client id of the access token: "sb-xssectestclone!b4|sb-xssectest!b4", identity zone of the access token: '
-            '"test-idz", OAuth client id: "sb-xssectest!t4", application identity zone: "test-idz".'
-            , str(ctx.exception))
+    # def test_valid_client_credentials_broker_plan_token_with_wrong_trustedclientidsuffix(self):
+    #     ''' valid client credentials broker plan token with wrong trustedclientidsuffix '''
+    #     with self.assertRaises(RuntimeError) as ctx:
+    #         xssec.create_security_context(
+    #             sign(jwt_payloads.CLIENT_CREDENTIALS_BROKER_PLAN_TOKEN),
+    #             uaa_configs.INVALID['uaa_broker_plan_wrong_suffix'])
+    #     self.assertEqual(
+    #         'Missmatch of client id and/or identityzone id. No JWT trust ACL (SAP_JWT_TRUST_ACL) specified in environment. '
+    #         'Client id of the access token: "sb-xssectestclone!b4|sb-xssectest!b4", identity zone of the access token: '
+    #         '"test-idz", OAuth client id: "sb-xssectest!t4", application identity zone: "test-idz".'
+    #         , str(ctx.exception))
 
     def test_valid_application_plan_with_trustedclientidsuffix(self):
         ''' valid application plan with shared tenant mode, defined via SAP_JWT_TRUST_ACL '''
@@ -400,18 +403,18 @@ class XSSECTest(unittest.TestCase):
         self.assertEqual('api', sec_context.get_identity_zone())
         self.assertEqual('api', sec_context.get_zone_id())
 
-    def test_invalid_application_plan_with_trustedclientidsuffix(self):
-        ''' invalid application plan with SAP_JWT_TRUST_ACL '''
-        environ['SAP_JWT_TRUST_ACL'] = json.dumps([{
-            'clientid': 'wrong-tenant',
-            'identityzone': 'api'
-        }])
-        with self.assertRaises(RuntimeError) as ctx:
-            xssec.create_security_context(
-                sign(jwt_payloads.INVALID_TRUSTED_APPLICATION_PLAN_TOKEN),
-                uaa_configs.INVALID['uaa_broker_plan_wrong_suffix'])
-        self.assertTrue(str(ctx.exception).startswith(
-                'No match found in JWT trust ACL (SAP_JWT_TRUST_ACL)'))
+    # def test_invalid_application_plan_with_trustedclientidsuffix(self):
+    #     ''' invalid application plan with SAP_JWT_TRUST_ACL '''
+    #     environ['SAP_JWT_TRUST_ACL'] = json.dumps([{
+    #         'clientid': 'wrong-tenant',
+    #         'identityzone': 'api'
+    #     }])
+    #     with self.assertRaises(RuntimeError) as ctx:
+    #         xssec.create_security_context(
+    #             sign(jwt_payloads.INVALID_TRUSTED_APPLICATION_PLAN_TOKEN),
+    #             uaa_configs.INVALID['uaa_broker_plan_wrong_suffix'])
+    #     self.assertTrue(str(ctx.exception).startswith(
+    #             'No match found in JWT trust ACL (SAP_JWT_TRUST_ACL)'))
 
     def test_token_with_ext_cxt(self):
         ''' valid user token with "ext_cxt" property '''
