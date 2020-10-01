@@ -4,14 +4,11 @@ from os import environ, path, devnull
 import socket
 from time import sleep
 from subprocess import Popen
-
-from sap.xssec import jwt_validation_facade
-
+from sap.xssec import jwt_validation_facade, constants
 from sap import xssec
 from tests import uaa_configs
 from tests import jwt_payloads
 from tests.jwt_tools import sign
-from xssec.constants import GRANTTYPE_JWT_BEARER
 
 TEST_SERVER_POLL_ATTEMPTS = 10
 
@@ -96,7 +93,7 @@ class ReqTokenForClientTest(unittest.TestCase):
             sign(jwt_payloads.USER_TOKEN_SCOPE_UAA_USER), uaa_configs.VALID['uaa'])
         expected_message = \
             'Authorization header invalid, requesting client does'\
-            ' not have grant_type={} or no scopes were granted.'.format(GRANTTYPE_JWT_BEARER)
+            ' not have grant_type={} or no scopes were granted.'.format(constants.GRANTTYPE_JWT_BEARER)
 
         self._request_token_for_client_error(
             sec_context, flask_url + '/401', expected_message)

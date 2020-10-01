@@ -1,7 +1,6 @@
 # pylint: disable=missing-docstring,invalid-name,missing-docstring
 from flask import Flask, request, jsonify
-
-from xssec.constants import GRANTTYPE_JWT_BEARER
+from sap.xssec.constants import GRANTTYPE_JWT_BEARER
 
 app = Flask(__name__)
 
