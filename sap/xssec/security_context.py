@@ -540,10 +540,6 @@ class SecurityContext(object):
             if prop not in service_credentials:
                 raise ValueError(
                     '"{0}" not found in "service_credentials"'.format(prop))
-
-        if self.check_scope('uaa.user') is False:
-            raise RuntimeError('JWT token does not include scope "uaa.user"')
-
         return self._get_user_token(service_credentials, scopes)
 
     def has_attributes(self):
