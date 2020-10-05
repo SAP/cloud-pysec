@@ -69,23 +69,22 @@ USER_TOKEN_NAMES_IN_EXT_ATTR = merge(USER_TOKEN, {
     }
 })
 
-USER_TOKEN_SCOPE_UAA_USER = merge(USER_TOKEN, {
-    "scope": [
-        "openid",
-        "uaa.user",
-        "uaa.resource"
-    ]
-})
-
 USER_TOKEN_EXPIRED = merge(USER_TOKEN, {
     "exp": 946684800,
 })
 
+USER_TOKEN_JWT_BEARER_FOR_CLIENT = merge(USER_TOKEN, {
+    "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+    "scope": [
+        "openid",
+    ]
+})
+
 USER_SAML_BEARER_TOKEN = merge(USER_TOKEN, {
+    "grant_type": "urn:ietf:params:oauth:grant-type:saml2-bearer",
     "scope": [
         "openid"
     ],
-    "grant_type": "urn:ietf:params:oauth:grant-type:saml2-bearer",
     "ext_attr": None
 })
 

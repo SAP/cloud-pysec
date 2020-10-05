@@ -7,6 +7,7 @@ GRANTTYPE_AUTHCODE = 'authorization_code'
 GRANTTYPE_PASSWORD = 'password'
 GRANTTYPE_CLIENTCREDENTIAL = 'client_credentials'
 GRANTTYPE_SAML2BEARER = 'urn:ietf:params:oauth:grant-type:saml2-bearer'
+GRANTTYPE_JWT_BEARER = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
 KEYCACHE_DEFAULT_CACHE_SIZE = 100
 KEYCACHE_DEFAULT_CACHE_ENTRY_EXPIRATION_TIME_IN_MINUTES = 15
 HTTP_TIMEOUT_IN_SECONDS = 2

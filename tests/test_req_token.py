@@ -4,9 +4,7 @@ from os import environ, path, devnull
 import socket
 from time import sleep
 from subprocess import Popen
-
-from sap.xssec import jwt_validation_facade
-
+from sap.xssec import jwt_validation_facade, constants
 from sap import xssec
 from tests import uaa_configs
 from tests import jwt_payloads
@@ -79,36 +77,25 @@ class ReqTokenForClientTest(unittest.TestCase):
             sec_context.request_token_for_client(service_credentials, None)
         self.assertTrue(str(ctx.exception).endswith(error_message_end))
 
-    def test_request_token_for_client_missing_uaa_user_scope(self):
-        '''
-        Test valid end-user token no attributes.
-        request_token_for_client failure, scope uaa.user missing
-        '''
-        sec_context = xssec.create_security_context(
-            sign(jwt_payloads.USER_TOKEN_NO_ATTR), uaa_configs.VALID['uaa'])
-        self._request_token_for_client_error(
-            sec_context, flask_url + '/500',
-            'JWT token does not include scope "uaa.user"')
-
     def test_req_client_for_user_401_error(self):
         sec_context = xssec.create_security_context(
-            sign(jwt_payloads.USER_TOKEN_SCOPE_UAA_USER), uaa_configs.VALID['uaa'])
+            sign(jwt_payloads.USER_TOKEN_JWT_BEARER_FOR_CLIENT), uaa_configs.VALID['uaa'])
         expected_message = \
-            'Bearer token invalid, requesting client does'\
-            ' not have grant_type=user_token or no scopes were granted.'
+            'Authorization header invalid, requesting client does'\
+            ' not have grant_type={} or no scopes were granted.'.format(constants.GRANTTYPE_JWT_BEARER)
 
         self._request_token_for_client_error(
             sec_context, flask_url + '/401', expected_message)
 
     def test_req_client_for_user_500_error(self):
         sec_context = xssec.create_security_context(
-            sign(jwt_payloads.USER_TOKEN_SCOPE_UAA_USER), uaa_configs.VALID['uaa'])
+            sign(jwt_payloads.USER_TOKEN_JWT_BEARER_FOR_CLIENT), uaa_configs.VALID['uaa'])
         self._request_token_for_client_error(
             sec_context, flask_url + '/500', 'HTTP status code: 500')
 
     def test_req_client_for_user(self):
         sec_context = xssec.create_security_context(
-            sign(jwt_payloads.USER_TOKEN_SCOPE_UAA_USER), uaa_configs.VALID['uaa'])
+            sign(jwt_payloads.USER_TOKEN_JWT_BEARER_FOR_CLIENT), uaa_configs.VALID['uaa'])
         service_credentials = {
             'clientid': 'clientid',
             'clientsecret': 'clientsecret',

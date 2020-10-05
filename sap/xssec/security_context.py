@@ -10,8 +10,8 @@ import urllib3
 
 from sap.xssec import constants
 from sap.xssec.jwt_validation_facade import JwtValidationFacade, DecodeError
-from sap.xssec.jwt_audience_validator import JwtAudienceValidator
 from sap.xssec.key_cache import KeyCache
+from sap.xssec.jwt_audience_validator import JwtAudienceValidator
 
 
 def _check_if_valid(item, name):
@@ -501,37 +501,27 @@ class SecurityContext(object):
             raise RuntimeError(
                 'Call to /oauth/token was not successful (grant_type: {0}).'.format(
                     grant_type) +
-                ' Bearer token invalid, requesting client does not have' +
-                ' grant_type=user_token or no scopes were granted.')
+                ' Authorization header invalid, requesting client does not have' +
+                ' grant_type={0} or no scopes were granted.'.format(constants.GRANTTYPE_JWT_BEARER))
         else:
             raise RuntimeError(
                 'Call to /oauth/token was not successful (grant_type: {0}).'.format(
                     grant_type) + ' HTTP status code: {0}'.format(status_code))
 
-    def _get_refresh_token(self, service_credentials, scopes):
-        url = '{0}/oauth/token?grant_type=user_token&response_type=token&client_id={1}'.format(
-            service_credentials['url'], service_credentials['clientid'])
-
-        if scopes:
-            url += '&scope=' + scopes
-
+    def _get_user_token(self, service_credentials, scopes):
+        url = '{}/oauth/token'.format(service_credentials['url'])
         response = requests.post(url, headers={
             'Accept': 'application/json',
-            'Authorization': 'Bearer {0}'.format(self._token)
-        })
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }, data={
+            'grant_type': constants.GRANTTYPE_JWT_BEARER,
+            'response_type': 'token',
+            'client_id': service_credentials['clientid'],
+            'assertion': self._token,
+            'scope': scopes
+        }, auth=(service_credentials['clientid'],  service_credentials['clientsecret']))
 
-        self._check_uaa_response(response, url, 'user_token')
-        return response.json()['refresh_token']
-
-    def _get_access_token(self, service_credentials, refresh_token):
-        url = '{0}/oauth/token?grant_type=refresh_token&refresh_token={1}'.format(
-            service_credentials['url'], refresh_token)
-
-        response = requests.post(url, headers={
-            'Accept': 'application/json'
-        }, auth=(service_credentials['clientid'], service_credentials['clientsecret']))
-
-        self._check_uaa_response(response, url, 'user_token')
+        self._check_uaa_response(response, url, constants.GRANTTYPE_JWT_BEARER)
         return response.json()['access_token']
 
     def request_token_for_client(self, service_credentials, scopes=None):
@@ -550,12 +540,7 @@ class SecurityContext(object):
             if prop not in service_credentials:
                 raise ValueError(
                     '"{0}" not found in "service_credentials"'.format(prop))
-
-        if self.check_scope('uaa.user') is False:
-            raise RuntimeError('JWT token does not include scope "uaa.user"')
-
-        return self._get_access_token(
-            service_credentials, self._get_refresh_token(service_credentials, scopes))
+        return self._get_user_token(service_credentials, scopes)
 
     def has_attributes(self):
         """
