@@ -12,6 +12,7 @@ def only_accepts_json():
         response.status_code = 400
         return response
 
+
 @app.route('/')
 def ping():
     return 'OK'
