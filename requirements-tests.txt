@@ -1,8 +1,9 @@
-flask
 coverage
-tox
-pylint
+cryptography
+flask
 mock
 parameterized
+pylint
+requests
 sap_py_jwt
-cryptography
+tox

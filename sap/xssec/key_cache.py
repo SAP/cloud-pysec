@@ -1,8 +1,8 @@
 import logging
 import time
-from requests import HTTPError, Timeout
+from httpx import HTTPError, HTTPStatusError, TimeoutException
 
-import requests
+import httpx
 from collections import OrderedDict
 from threading import Lock
 
@@ -72,7 +72,7 @@ class KeyCache(object):
                     return key['value']
 
             raise ValueError("Could not find key with kid {}".format(kid))
-        except requests.exceptions.HTTPError as e:
+        except HTTPError as e:
             self._logger.error("Error while trying to get key from uaa. {}".format(e))
             raise
 
@@ -80,11 +80,11 @@ class KeyCache(object):
         i = 0
         while True:
             try:
-                r = requests.get(jku, timeout=HTTP_TIMEOUT_IN_SECONDS)
+                r = httpx.get(jku, timeout=HTTP_TIMEOUT_IN_SECONDS)
                 r.raise_for_status()
                 return r
-            except (HTTPError, Timeout) as e:
-                if i < HTTP_RETRY_NUMBER_RETRIES and (isinstance(e, Timeout) or
+            except (HTTPStatusError, TimeoutException) as e:
+                if i < HTTP_RETRY_NUMBER_RETRIES and (isinstance(e, TimeoutException) or
                                                       e.response.status_code in HTTP_RETRY_ON_ERROR_CODE):
                     i = i + 1
                     self._logger.warn("Warning: Error while trying to get key from uaa. {}. Start retry attempt {}".

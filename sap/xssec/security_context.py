@@ -4,7 +4,7 @@ from os import environ
 import json
 from datetime import datetime
 import logging
-import requests
+import httpx
 import deprecation
 import urllib3
 
@@ -510,7 +510,7 @@ class SecurityContext(object):
 
     def _get_user_token(self, service_credentials, scopes):
         url = '{}/oauth/token'.format(service_credentials['url'])
-        response = requests.post(url, headers={
+        response = httpx.post(url, headers={
             'Accept': 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded',
         }, data={

@@ -1,4 +1,5 @@
 # pylint: disable=missing-docstring,invalid-name,missing-docstring,too-many-public-methods
+from ssl import SSLError
 import unittest
 import json
 from os import environ
@@ -11,6 +12,8 @@ from tests import uaa_configs
 from tests import jwt_payloads
 from tests.http_responses import HTTP_SUCCESS
 from tests.jwt_tools import sign
+
+import httpx
 
 try:
     from importlib import reload
@@ -39,6 +42,11 @@ class XSSECTest(unittest.TestCase):
         reload(jwt_validation_facade)
         reload(security_context)
         jwt_validation_facade.ALGORITHMS = ['RS256', 'HS256']
+
+        patcher = patch('httpx.get')
+        self.mock_httpx_get = patcher.start()
+        self.addCleanup(patcher.stop)
+        self.mock_httpx_get.side_effect = SSLError
 
     def _check_invalid_params(self, token, uaa, message):
         with self.assertRaises(ValueError) as ctx:
@@ -445,7 +453,7 @@ class XSSECTest(unittest.TestCase):
         self.assertTrue(
             'Error in offline validation of access token:' in str(ctx.exception))
 
-    @patch('requests.get')
+    @patch('httpx.get')
     def test_get_verification_key_from_uaa(self, mock_requests):
         from sap.xssec.key_cache import KeyCache
         xssec.SecurityContext.verificationKeyCache = KeyCache()

@@ -2,7 +2,7 @@
 # docker build -t pysec-test .
 # docker run -it --rm pysec-test:latest /bin/bash
 
-FROM python:3.6-slim
+FROM python:3.7-slim
 
 RUN apt-get update && apt-get install -y curl git
 WORKDIR /root/home
