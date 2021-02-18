@@ -118,7 +118,7 @@ change the `USE_SAP_PY_JWT` environment variable to `true`.
 
 
 # Requirements
-*sap_xssec* requires either *python 2.7* or *python 3.7*.
+*sap_xssec* requires *python 3.6* or newer.
 
 
 # Download and Installation
