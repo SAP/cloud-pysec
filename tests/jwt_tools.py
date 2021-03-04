@@ -10,4 +10,4 @@ def sign(payload, headers=None):
             "kid": "key-id-0"
         }
     payload = {k: payload[k] for k in payload if payload[k] is not None}
-    return jwt.encode(payload, PRIVATE_KEY, algorithm="RS256", headers=headers).decode("utf-8")
+    return jwt.encode(payload, PRIVATE_KEY, algorithm="RS256", headers=headers)
