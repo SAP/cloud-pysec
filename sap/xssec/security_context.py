@@ -509,6 +509,8 @@ class SecurityContext(object):
                     grant_type) + ' HTTP status code: {0}'.format(status_code))
 
     def _get_user_token(self, service_credentials, scopes):
+        assert scopes is not None
+
         url = '{}/oauth/token'.format(service_credentials['url'])
         response = httpx.post(url, headers={
             'Accept': 'application/json',
@@ -524,17 +526,21 @@ class SecurityContext(object):
         self._check_uaa_response(response, url, constants.GRANTTYPE_JWT_BEARER)
         return response.json()['access_token']
 
-    def request_token_for_client(self, service_credentials, scopes=None):
+    def request_token_for_client(self, service_credentials, scopes=''):
         """
         :param service_credentials: The credentials of the service as dict.
             The attributes clientid, clientsecret and url (UAA) are mandatory.
 
         :param scopes: comma-separated list of requested scopes for the token,
-            e.g. app.scope1,app.scope2. If null, all scopes are granted.
-            Note that $XSAPPNAME is not supported as part of the scope names.
+            e.g. app.scope1,app.scope2. If an empty string is passed, all
+            scopes are granted. Note that $XSAPPNAME is not supported as part
+            of the scope names.
 
         :return: Token.
         """
+        if scopes is None:
+            scopes = ''
+
         _check_if_valid(service_credentials, 'service_credentials')
         for prop in ['clientid', 'clientsecret', 'url']:
             if prop not in service_credentials:
