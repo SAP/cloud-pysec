@@ -15,3 +15,10 @@ install:
   - pip install -U tox
 
 script: tox
+deploy:
+  provider: pypi
+  username: "__token__"
+  password:
+    secure: IeapjgqxJrIXkSBgRYC8yTXSBi0/UtuphT0tiOYC6rZ9R5X4FnuBd8cMO2ZyN4wGSIStwNIaTyHrS/q4pvZtkyhlY5U7q7PaAD5N99zfR3fM7De+rbJZwx4zrIKyi8n4FiP96UGv2mZ5mZ8ad+2S6YLEByXVGRb1wuORHzO9AJlSXnBew7qo6VnuBIfalIRJY4PYyMOKqk+UjuMnFEghWQjVyT6A+vzVb5BU5z2oL0PwF/XWFNXPVRhDHxvX+JvOVqELw66jDR4q/MMyXEQD/ZoXO9ksbu38DMrTj7vjYBhkOxLcGAWsIgXkFxwSvkirTbj4WSiwCdHmYJNFg930QS2P+XxxDd/FTp1L9ojhN2cXWeBKIFXjLVtwXudLLRrbk65yNSdgt4x3hCdO4wWBDGeleG3C48qQwJAg3KHrZkXLZ8H9eJOpeV7+vnR9RBBRKxgv+6cUs22XR5fPLFfGTYw25tDPJcovpOTn4NxjEM8Je+Yj1LNTQ3LZd3Lt7HzOtZJLixphfFX7LVPvgd1/DrJaM85by7VSoUtdEMV5vSZl35PSVROjyODp6KSOUWJzpT3DL+MHAh85picVc8Pq7bf5PtdgzbJoOxzHl8CA1GXJvrs2kjTH+vnXIrpLPWZa5tiyE4gE+wLzuS+suJEt6ILSBIB1MAh7PLqhix8QTG0=
+  on:
+    tags: true
