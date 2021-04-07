@@ -1,4 +1,5 @@
-from requests import Timeout, HTTPError, Response
+from httpx import Timeout, HTTPStatusError, HTTPError, Response
+from httpx import TimeoutException
 
 from sap.xssec import constants
 from sap.xssec.key_cache import KeyCache
@@ -15,7 +16,7 @@ threadErrors = False
 
 
 @patch('time.time', return_value=MOCKED_CURRENT_TIME)
-@patch('requests.get')
+@patch('httpx.get')
 class CacheTest(unittest.TestCase):
 
     def setUp(self):
@@ -168,7 +169,10 @@ class CacheTest(unittest.TestCase):
         self.assertEqual(strip_white_space(key1), strip_white_space(key2))
 
     def test_timeout_retry(self, mock_requests, mock_time):
-        mock_requests.side_effect = [Timeout(), self.mock]
+        # mock_requests.side_effect = [Timeout(), self.mock]
+
+        exc = TimeoutException('timeout_retry test case', request=None)
+        mock_requests.side_effect = [exc, self.mock]
         self.mock.json.return_value = HTTP_SUCCESS
 
         key = self.cache.load_key("jku1", "key-id-1")
@@ -177,7 +181,8 @@ class CacheTest(unittest.TestCase):
         self.assertEqual(2, mock_requests.call_count)
 
     def test_timeout_retry_max(self, mock_requests, mock_time):
-        mock_requests.side_effect = [Timeout(), Timeout(), Timeout(), self.mock]
+        exc = TimeoutException('retry_max test case', request=None)
+        mock_requests.side_effect = [exc, exc, exc, self.mock]
         self.mock.json.return_value = HTTP_SUCCESS
 
         key = self.cache.load_key("jku1", "key-id-1")
@@ -186,16 +191,16 @@ class CacheTest(unittest.TestCase):
         self.assertEqual(4, mock_requests.call_count)
 
     def test_timeout_retry_fail(self, mock_requests, mock_time):
-        mock_requests.side_effect = [Timeout(), Timeout(), Timeout(), Timeout()]
+        exc = TimeoutException('retry_fail test case', request=None)
+        mock_requests.side_effect = 4 * [exc]
 
-        with self.assertRaises(Timeout):
+        with self.assertRaises(TimeoutException):
             self.cache.load_key("jku1", "key-id-1")
         self.assertEqual(4, mock_requests.call_count)
 
     def test_http_retry_(self, mock_requests, mock_time):
-        response = Response()
-        response.status_code = 502
-        mock_requests.side_effect = [HTTPError(response=response), self.mock]
+        response = Response(status_code=502)
+        mock_requests.side_effect = [HTTPStatusError(message=..., request=..., response=response), self.mock]
         self.mock.json.return_value = HTTP_SUCCESS
 
         key = self.cache.load_key("jku1", "key-id-1")
