@@ -41,4 +41,10 @@ def return_token():
     return jsonify({'access_token': 'access_token'})
 
 
-
+@app.route('/mtls/oauth/token', methods=['POST'])
+def return_token_mtls():
+    grant_type = request.form.get('grant_type')
+    if grant_type != GRANTTYPE_JWT_BEARER:
+        return 'Invalid grant type', 400
+    # TODO: certificate validation
+    return jsonify({'access_token': 'access_token'})
