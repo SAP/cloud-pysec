@@ -528,17 +528,18 @@ class SecurityContext(object):
                     grant_type) + ' HTTP status code: {0}'.format(status_code))
 
     def _get_user_token(self, url, client_id, scopes, auth, cert):
+        grant_type = "client_x509" if cert else constants.GRANTTYPE_JWT_BEARER
         response = httpx.post(url, headers={
             'Accept': 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded',
         }, data={
-            'grant_type': constants.GRANTTYPE_JWT_BEARER,
+            'grant_type': grant_type,
             'response_type': 'token',
             'client_id': client_id,
             'assertion': self._token,
             'scope': '' if scopes is None else scopes
         }, auth=auth, cert=cert)
-        self._check_uaa_response(response, url, constants.GRANTTYPE_JWT_BEARER)
+        self._check_uaa_response(response, url, grant_type)
         return response.json()['access_token']
 
     def request_token_for_client(self, service_credentials, scopes=''):
