@@ -14,9 +14,6 @@ from sap.xssec.jwt_validation_facade import JwtValidationFacade, DecodeError
 from sap.xssec.key_cache import KeyCache
 from sap.xssec.jwt_audience_validator import JwtAudienceValidator
 
-cred_attrs = ("url", "clientid", "clientsecret",)
-mtls_attrs = ("url", "clientid", "certificate", "key")
-
 
 def _check_if_valid(item, name):
     if item is None:
@@ -25,20 +22,13 @@ def _check_if_valid(item, name):
         raise ValueError('"{0}" should not be an empty string'.format(name))
 
 
-def _check_config(config, name='config'):
-    _check_if_valid(config, name)
-    if _is_mtls_enabled(config):
-        for prop in mtls_attrs:
-            item = config.get(prop)
-            _check_if_valid(item, '{}.{}'.format(name, prop))
-    else:
-        for prop in cred_attrs:
-            item = config.get(prop)
-            _check_if_valid(item, '{}.{}'.format(name, prop))
-
-
-def _is_mtls_enabled(config):
-    return config.get('credential-type') == 'x509'
+def _check_config(config):
+    _check_if_valid(config, 'config')
+    for prop in ['clientid', 'clientsecret', 'url']:
+        item = None
+        if prop in config:
+            item = config[prop]
+        _check_if_valid(item, 'config.{0}'.format(prop))
 
 
 def _create_cert_and_key_files(cert_content, key_content):
@@ -112,8 +102,7 @@ class SecurityContext(object):
 
         jku_url = urllib3.util.parse_url(self._properties['jku'])
         if not jku_url.hostname.endswith(uaa_domain):
-            self._logger.error(
-                "Error: Do not trust jku '{}' because it does not match uaa domain".format(self._properties['jku']))
+            self._logger.error("Error: Do not trust jku '{}' because it does not match uaa domain".format(self._properties['jku']))
             raise RuntimeError("JKU of token is not trusted")
 
     def _set_token_properties(self):
@@ -156,6 +145,7 @@ class SecurityContext(object):
         # Audience Property added
         self._properties['aud'] = None
 
+
     def _get_jwt_payload(self, verification_key):
         self._logger.debug('SSO library path: %s, CCL library path: %s',
                            environ.get('SSOEXT_LIB'), environ.get('SSF_LIB'))
@@ -175,7 +165,7 @@ class SecurityContext(object):
 
         jwt_payload = self._jwt_validator.getJWPayload()
         for id_type in ['cid', 'zid']:
-            if id_type not in jwt_payload:
+            if not id_type in jwt_payload:
                 raise RuntimeError(
                     '{0} not contained in access token.'.format(id_type))
 
@@ -195,8 +185,7 @@ class SecurityContext(object):
             else:
                 self._logger.debug('Client Id of the access token (XSUAA application plan)'
                                    ' matches with the current application\'s Client Id.')
-        elif self._config.get('trustedclientidsuffix') and jwt_payload['cid'].endswith(
-                self._config['trustedclientidsuffix']):
+        elif self._config.get('trustedclientidsuffix') and jwt_payload['cid'].endswith(self._config['trustedclientidsuffix']):
             self._logger.debug('Token of UAA service plan "broker" received.')
             self._logger.debug(
                 'Client Id "%s" of the access token allows consumption by'
@@ -266,6 +255,7 @@ class SecurityContext(object):
             'Application received a token with  "%s".',
             self.get_audience())
 
+
     def _set_user_info(self, jwt_payload):
         if self.get_grant_type() == constants.GRANTTYPE_CLIENTCREDENTIAL:
             return
@@ -283,9 +273,9 @@ class SecurityContext(object):
         user_info['email'] = jwt_payload.get('email')
         self._logger.debug('User info: %s', user_info)
 
-        ext_cxt_container = jwt_payload  # old jwt structure
+        ext_cxt_container = jwt_payload # old jwt structure
         if 'ext_cxt' in jwt_payload:
-            ext_cxt_container = jwt_payload['ext_cxt']  # new jwt structure
+            ext_cxt_container = jwt_payload['ext_cxt'] # new jwt structure
 
         self._properties['saml_token'] = ext_cxt_container.get(
             'hdb.nameduser.saml')
@@ -358,13 +348,14 @@ class SecurityContext(object):
 
     def _audience_validation(self):
         audience_validator = JwtAudienceValidator(self._config['clientid'])
-        if self._config['xsappname']:
+        if(self._config['xsappname']):
             audience_validator.configure_trusted_clientId(self._config['xsappname'])
-        validation_result = audience_validator.validate_token(self.get_clientid(), self.get_audience(),
-                                                              self._properties['scopes'])
+        validation_result = audience_validator.validate_token(self.get_clientid(), self.get_audience(), self._properties['scopes'])
 
         if validation_result is False:
-            raise RuntimeError('Audience Validation Failed')
+                raise RuntimeError('Audience Validation Failed')
+
+
 
     def _get_property_of(self, property_name, obj):
         if self.get_grant_type() == constants.GRANTTYPE_CLIENTCREDENTIAL:
@@ -496,11 +487,12 @@ class SecurityContext(object):
         return self._properties['origin']
 
     def get_audience(self):
-        """
+        '''
         :return: The user origin. The origin is an alias that refers to a user store in
             which the user is persisted.
-        """
+        '''
         return self._properties['aud']
+
 
     def get_clone_service_instance_id(self):
         """:return: The service instance id of the clone if the XSUAA broker plan is used. """
@@ -560,9 +552,15 @@ class SecurityContext(object):
         :return: Token.
         """
         _check_if_valid(service_credentials, 'service_credentials')
-        _check_config(service_credentials, 'service_credentials')
 
-        use_mtls = _is_mtls_enabled(service_credentials)
+        mtls_attrs = ("url", "clientid", "certificate", "key")
+        cred_attrs = ("url", "clientid", "clientsecret")
+        use_mtls = all(k in service_credentials for k in mtls_attrs)
+        use_cred = not use_mtls and all(k in service_credentials for k in cred_attrs)
+        if not use_mtls and not use_cred:
+            raise ValueError('Either [{}] or [{}] are required in "service_credentials"'.format(
+                ','.join(mtls_attrs), ','.join(cred_attrs)))
+
         url = '{}/oauth/token'.format(service_credentials['url'].replace('.authentication.', '.authentication.cert.')
                                       if use_mtls else service_credentials['url'])
         cert_file, key_file = None, None
@@ -639,7 +637,7 @@ class SecurityContext(object):
                 'The access token contains no additional authentication attributes.')
             return None
 
-        if name not in self._properties['additional_auth_attributes']:
+        if not name in self._properties['additional_auth_attributes']:
             self._logger.debug(
                 'No attribute "%s" found as additional authentication attribute.', name)
             return None

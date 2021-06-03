@@ -13,6 +13,8 @@ from tests import jwt_payloads
 from tests.http_responses import HTTP_SUCCESS
 from tests.jwt_tools import sign
 
+import httpx
+
 try:
     from importlib import reload
     from unittest.mock import MagicMock, patch
@@ -92,20 +94,6 @@ class XSSECTest(unittest.TestCase):
             'valid',
             uaa_configs.INVALID['uaa_clientsecret_undefined'],
             '"config.clientsecret" should not be None')
-
-    def test_input_validation_invalid_config_mtls_certificate(self):
-        ''' input validation: invalid config ertificate '''
-        self._check_invalid_params(
-            'valid',
-            uaa_configs.INVALID['uaa_mtls_certificate_undefined'],
-            '"config.certificate" should not be None')
-
-    def test_input_validation_invalid_config_mtls_key(self):
-        ''' input validation: invalid config key '''
-        self._check_invalid_params(
-            'valid',
-            uaa_configs.INVALID['uaa_mtls_key_undefined'],
-            '"config.key" should not be None')
 
     def test_input_validation_invalid_config_xsappname(self):
         ''' input validation: invalid config xsappname '''

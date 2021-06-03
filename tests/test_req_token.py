@@ -128,7 +128,6 @@ class ReqTokenForClientTest(unittest.TestCase):
         sec_context = xssec.create_security_context(
             sign(jwt_payloads.USER_TOKEN_JWT_BEARER_FOR_CLIENT), uaa_configs.VALID['uaa'])
         service_credentials = {
-            'credential-type': 'x509',
             'clientid': 'clientid',
             'certificate':  CLIENT_X509_CERTIFICATE,
             'key': CLIENT_X509_KEY,
