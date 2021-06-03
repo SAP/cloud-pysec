@@ -32,20 +32,22 @@ def _check_config(config):
 
 
 def _create_cert_and_key_files(cert_content, key_content):
-    cert_file, key_file = tempfile.NamedTemporaryFile(mode='w', delete=False), \
-                          tempfile.NamedTemporaryFile(mode='w', delete=False)
+    cert_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
     cert_file.write(cert_content)
     cert_file.close()
-    key_file.write(key_content)
-    key_file.close()
-    return cert_file, key_file
+    key_file = None
+    if key_content is not None:
+        key_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
+        key_file.write(key_content)
+        key_file.close()
+    return cert_file.name, key_file.name if key_file else None
 
 
-def _delete_cert_and_key_files(cert_file, key_file):
-    if cert_file:
-        unlink(cert_file.name)
-    if key_file:
-        unlink(key_file.name)
+def _delete_cert_and_key_files(cert_file_name, key_file_name):
+    if cert_file_name:
+        unlink(cert_file_name)
+    if key_file_name:
+        unlink(key_file_name)
 
 
 class SecurityContext(object):
@@ -553,7 +555,7 @@ class SecurityContext(object):
         """
         _check_if_valid(service_credentials, 'service_credentials')
 
-        mtls_attrs = ("url", "clientid", "certificate", "key")
+        mtls_attrs = ("url", "clientid", "certificate")  # key is optional
         cred_attrs = ("url", "clientid", "clientsecret")
         use_mtls = all(k in service_credentials for k in mtls_attrs)
         use_cred = not use_mtls and all(k in service_credentials for k in cred_attrs)
@@ -563,18 +565,18 @@ class SecurityContext(object):
 
         url = '{}/oauth/token'.format(service_credentials['url'].replace('.authentication.', '.authentication.cert.')
                                       if use_mtls else service_credentials['url'])
-        cert_file, key_file = None, None
+        cert_file_name, key_file_name = None, None
         try:
             if use_mtls:
-                cert_file, key_file = _create_cert_and_key_files(service_credentials['certificate'],
-                                                                 service_credentials['key'])
+                cert_file_name, key_file_name = _create_cert_and_key_files(service_credentials['certificate'],
+                                                                           service_credentials.get('key'))
             return self._get_user_token(url, service_credentials['clientid'], scopes,
                                         auth=None if use_mtls else (service_credentials['clientid'],
                                                                     service_credentials['clientsecret']),
-                                        cert=(cert_file.name, key_file.name) if use_mtls else None)
+                                        cert=(cert_file_name, key_file_name) if use_mtls else None)
 
         finally:
-            _delete_cert_and_key_files(cert_file, key_file)
+            _delete_cert_and_key_files(cert_file_name, key_file_name)
 
     def has_attributes(self):
         """
