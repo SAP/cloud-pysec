@@ -547,21 +547,77 @@ class SecurityContext(object):
                 'Call to /oauth/token was not successful (grant_type: {0}).'.format(
                     grant_type) + ' HTTP status code: {0}'.format(status_code))
 
+    def _user_token_request_content(self, scopes, client_id):
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        data = {
+            "grant_type": constants.GRANTTYPE_JWT_BEARER,
+            "response_type": "token",
+            "client_id": client_id,
+            "assertion": self._token,
+            'scope': '' if scopes is None else scopes,
+        }
+        return headers, data
+
     def _get_user_token(self, url, client_id, scopes, auth, cert):
-        response = httpx.post(url, headers={
-            'Accept': 'application/json',
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }, data={
-            'grant_type': constants.GRANTTYPE_JWT_BEARER,
-            'response_type': 'token',
-            'client_id': client_id,
-            'assertion': self._token,
-            'scope': '' if scopes is None else scopes
-        }, auth=auth, cert=cert)
+        headers, data = self._user_token_request_content(scopes, client_id)
+        with httpx.Client(cert=cert) as client:
+            response = client.post(
+                url,
+                headers=headers,
+                data=data,
+                auth=auth,
+            )
         self._check_uaa_response(response, url, constants.GRANTTYPE_JWT_BEARER)
         return response.json()['access_token']
 
-    def request_token_for_client(self, service_credentials, scopes=''):
+    async def _get_user_token_async(self, url, client_id, scopes, auth, cert):
+        assert scopes is not None
+
+        headers, data = self._user_token_request_content(scopes, client_id)
+        async with httpx.AsyncClient(cert=cert) as client:
+            response = await client.post(
+                url,
+                headers=headers,
+                data=data,
+                auth=auth,
+            )
+
+        self._check_uaa_response(response, url, constants.GRANTTYPE_JWT_BEARER)
+        return response.json()["access_token"]
+
+    async def request_token_for_client_async(self, service_credentials, scopes=""):
+        """
+        :param service_credentials: The credentials of the service as dict.
+            The attributes [clientid, certificate, key and url] or [clientid, clientsecret and url] are mandatory.
+
+        :param scopes: comma-separated list of requested scopes for the token,
+            e.g. app.scope1,app.scope2. If an empty string is passed, all
+            scopes are granted. Note that $XSAPPNAME is not supported as part
+            of the scope names.
+
+        :return: Token.
+        """
+        _check_if_valid(service_credentials, 'service_credentials')
+        _check_config(service_credentials)
+        use_mtls = True if _has_client_certificate_props(service_credentials) else False
+        url = '{}/oauth/token'.format(service_credentials['certurl'] if use_mtls else service_credentials['url'])
+        cert_file_name, key_file_name = None, None
+        try:
+            if use_mtls:
+                cert_file_name, key_file_name = _create_cert_and_key_files(service_credentials['certificate'],
+                                                                           service_credentials.get('key'))
+            return await self._get_user_token_async(url, service_credentials['clientid'], scopes,
+                                        auth=None if use_mtls else (service_credentials['clientid'],
+                                                                    service_credentials['clientsecret']),
+                                        cert=(cert_file_name, key_file_name) if use_mtls else None)
+
+        finally:
+            _delete_cert_and_key_files(cert_file_name, key_file_name)
+
+    def request_token_for_client(self, service_credentials, scopes=""):
         """
         :param service_credentials: The credentials of the service as dict.
             The attributes [clientid, certificate, key and url] or [clientid, clientsecret and url] are mandatory.

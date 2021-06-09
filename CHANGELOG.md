@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## 3.1.0
 ### Added
+
+- Support `async` user token requests
+
+## 3.1.0
+### Added
 	
 - Support for tokenexchanges with X.509 certificates managed by XSUAA
 - Support for tokenexchanges with manually managed X.509 certificates
