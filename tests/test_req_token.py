@@ -13,6 +13,8 @@ from tests.jwt_tools import sign
 
 import requests
 
+from tests.keys import CLIENT_X509_CERTIFICATE, CLIENT_X509_KEY
+
 TEST_SERVER_POLL_ATTEMPTS = 10
 
 
@@ -115,6 +117,21 @@ class ReqTokenForClientTest(unittest.TestCase):
             'clientid': 'clientid',
             'clientsecret': 'clientsecret',
             'url': flask_url + '/correct'
+        }
+        token = sec_context.request_token_for_client(service_credentials, None)
+        self.assertEqual(token, 'access_token')
+
+    @patch('httpx.get')
+    def test_req_client_for_user_with_mtls(self, mock_get):
+        self._setup_get_error(mock_get)
+
+        sec_context = xssec.create_security_context(
+            sign(jwt_payloads.USER_TOKEN_JWT_BEARER_FOR_CLIENT), uaa_configs.VALID['uaa'])
+        service_credentials = {
+            'clientid': 'clientid',
+            'certificate':  CLIENT_X509_CERTIFICATE,
+            'key': CLIENT_X509_KEY,
+            'certurl': flask_url + '/mtls'
         }
         token = sec_context.request_token_for_client(service_credentials, None)
         self.assertEqual(token, 'access_token')

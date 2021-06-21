@@ -1,8 +1,8 @@
 import json
 
-from tests.keys import PUBLIC_KEY
+from tests.keys import JWT_SIGNING_PUBLIC_KEY
 
-KEY_ID_0 = PUBLIC_KEY
+KEY_ID_0 = JWT_SIGNING_PUBLIC_KEY
 
 KEY_ID_1 = "ANOTHER-KEY"
 

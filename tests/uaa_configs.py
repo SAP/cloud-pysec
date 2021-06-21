@@ -1,11 +1,11 @@
 ''' test uaa configurations '''
-from tests.keys import PUBLIC_KEY
+from tests.keys import JWT_SIGNING_PUBLIC_KEY
 
 INVALID = {
     'uaa_url_undefined': {
         'clientid': 'xs2.node',
         'clientsecret': 'nodeclientsecret',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'xsappname': 'node_unittest_app',
         'identityzone': 'test-idz',
         'tags': ['xsuaa_url_undefined'],
@@ -14,16 +14,16 @@ INVALID = {
     'uaa_clientid_undefined': {
         'url': 'http://sap-login-test.cfapps.neo.ondemand.com',
         'clientsecret': 'nodeclientsecret',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'xsappname': 'node_unittest_app',
         'identityzone': 'test-idz',
         'tags': ['xsuaa_clientid_undefined'],
         'uaadomain': 'api.cf.test.com'
     },
-    'uaa_clientsecret_undefined': {
+    'uaa_clientsecret_and_certificate_undefined': {
         'url': 'http://sap-login-test.cfapps.neo.ondemand.com',
         'clientid': 'xs2.node',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'xsappname': 'node_unittest_app',
         'identityzone': 'test-idz',
         'tags': ['xsuaa_clientsecret_undefined'],
@@ -33,14 +33,14 @@ INVALID = {
         'url': 'http://sap-login-test.cfapps.neo.ondemand.com',
         'clientid': 'xs2.node',
         'clientsecret': 'nodeclientsecret',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'identityzone': 'test-idz',
         'tags': ['xsuaa_clientsecret_undefined'],
         'uaadomain': 'api.cf.test.com'
     },
     'uaa_broker_plan_wrong_suffix': {
         'clientid': 'sb-xssectest!t4',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'xsappname': "sb-tenant-test!t13",
 
         'identityzone': 'test-idz',
@@ -61,12 +61,34 @@ INVALID = {
         'url': 'http://paas.localhost:8080/uaa-security',
         'tags': ['xsuaa_application_plan'],
         'uaadomain': 'api.cf.test.com'
-    }
+    },
+    'uaa_mtls_certificate_undefined': {
+        'url': 'http://sap-login-test.cfapps.neo.ondemand.com',
+        'clientid': 'xs2.node',
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
+        'xsappname': 'node_unittest_app',
+        'identityzone': 'test-idz',
+        'tags': ['xsuaa_clientsecret_undefined'],
+        'uaadomain': 'api.cf.test.com',
+        'credential-type': 'x509',
+        'key': 'some-key'
+    },
+    'uaa_mtls_key_undefined': {
+        'url': 'http://sap-login-test.cfapps.neo.ondemand.com',
+        'clientid': 'xs2.node',
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
+        'xsappname': 'node_unittest_app',
+        'identityzone': 'test-idz',
+        'tags': ['xsuaa_clientsecret_undefined'],
+        'uaadomain': 'api.cf.test.com',
+        'credential-type': 'x509',
+        'certificate': 'some-cert'
+    },
 }
 VALID = {
     'uaa': {
         'clientid': 'sb-xssectest',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'xsappname': 'uaa',
         'identityzone': 'test-idz-name',
         'identityzoneid': 'test-idz',
@@ -78,7 +100,7 @@ VALID = {
     },
     'uaa_foreign_idz': {
         'clientid': 'sb-xssectest',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'xsappname': 'uaa',
         'identityzoneid': 'foreign-idz',
         'clientsecret': 'z431EZmJWiuA/yINKXGewGR/wo99JKiVKAzG7yRyUHld'
@@ -89,7 +111,7 @@ VALID = {
     },
     'uaa_foreign_clientid': {
         'clientid': 'foreign-clientid',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'xsappname': 'uaa',
         'identityzone': 'test-idz',
         'clientsecret': 'z431EZmJWiuA/yINKXGewGR/wo99JKiVKAzG7yRyUHldI'
@@ -100,7 +122,7 @@ VALID = {
     },
     'uaa_foreign_idz_clientid': {
         'clientid': 'foreign-clientid',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'xsappname': 'uaa',
         'identityzone': 'foreign-idz',
         'clientsecret': 'z431EZmJWiuA/yINKXGewGR/wo99JKiVKAzG7yRyUHld'
@@ -111,7 +133,7 @@ VALID = {
     },
     'uaa_cc': {
         'clientid': 'sb-xssectest',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'xsappname': 'uaa',
         'identityzone': 'test-idz',
         'clientsecret': 'z431EZmJWiuA/yINKXGewGR/wo99JKiVKAzG7yRyUHld'
@@ -122,7 +144,7 @@ VALID = {
     },
     'uaa_bearer': {
         'clientid': 'sb-xssectest',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'xsappname': 'admin',
         'identityzone': 'test-idz',
         'clientsecret': 'UBHlAbnLhn+PiTc7xWG7s1yb+bTkXOjvDtBRbDykXLS2c'
@@ -133,7 +155,7 @@ VALID = {
     },
     'uaa_broker_plan': {
         'clientid': 'sb-xssectest!b4',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'xsappname': 'uaa',
         'identityzone': 'test-idz',
         'trustedclientidsuffix': '|sb-xssectest!b4',
@@ -145,7 +167,7 @@ VALID = {
     },
     'uaa_application_plan': {
         'clientid': 'sb-xssectest!t4',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'xsappname': 'uaa',
         'identityzone': 'paas-idz',
         'clientsecret': 'z431EZmJWiuA/yINKXGewGR/wo99JKiVKAzG7yRyUHldI'
@@ -156,7 +178,7 @@ VALID = {
     },
     'uaa_new_token_structure': {
         'clientid': 'sb-clone2!b1|LR-master!b1',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'xsappname': 'uaa',
         'identityzone': 'paas',
         'clientsecret': 'z431EZmJWiuA/yINKXGewGR/wo99JKiVKAzG7yRyUHldI'
@@ -195,7 +217,7 @@ VALID = {
         'clientsecret': 'z431EZmJWiuA/yINKXGewGR/wo99JKiVKAzG7yRyUHld'
                         'IFUBiZx5SOMxvS2nqwwDzK6sqX2Hx2i2\nadgJjtIqgA==',
         'url': 'http://localhost:8080/uaa',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'tags': ['xsuaa']
     },
     'uaa_xsa_with_newlines': {
@@ -206,7 +228,7 @@ VALID = {
         'clientsecret': 'z431EZmJWiuA/yINKXGewGR/wo99JKiVKAzG7yRyUHld'
                         'IFUBiZx5SOMxvS2nqwwDzK6sqX2Hx2i2\nadgJjtIqgA==',
         'url': 'http://localhost:8080/uaa',
-        'verificationkey': PUBLIC_KEY,
+        'verificationkey': JWT_SIGNING_PUBLIC_KEY,
         'tags': ['xsuaa']
     }
 }

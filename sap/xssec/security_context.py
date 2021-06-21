@@ -1,9 +1,13 @@
 # pylint: disable=too-many-public-methods
 """ Security Context class """
-from os import environ
+import functools
+import tempfile
+from os import environ, unlink
 import json
 from datetime import datetime
 import logging
+from typing import Any, Dict
+
 import httpx
 import deprecation
 import urllib3
@@ -12,6 +16,9 @@ from sap.xssec import constants
 from sap.xssec.jwt_validation_facade import JwtValidationFacade, DecodeError
 from sap.xssec.key_cache import KeyCache
 from sap.xssec.jwt_audience_validator import JwtAudienceValidator
+
+_client_secret_props = ('clientid', 'clientsecret', 'url')  # props for client secret authentication
+_client_certificate_props = ("clientid", "certificate", "certurl")  # props for client certificate authentication
 
 
 def _check_if_valid(item, name):
@@ -23,11 +30,47 @@ def _check_if_valid(item, name):
 
 def _check_config(config):
     _check_if_valid(config, 'config')
-    for prop in ['clientid', 'clientsecret', 'url']:
-        item = None
-        if prop in config:
-            item = config[prop]
+    if not _has_client_secret_props(config) and not _has_client_certificate_props(config):
+        raise ValueError('Either {} or {} should be provided'.
+                         format(','.join(_client_secret_props), ','.join(_client_certificate_props)))
+
+
+def _has_client_secret_props(config):
+    return all(map(functools.partial(_check_prop, config), _client_secret_props))
+
+
+def _has_client_certificate_props(config):
+    return all(map(functools.partial(_check_prop, config), _client_certificate_props))
+
+
+def _check_prop(config: Dict[str, Any], prop: str) -> bool:
+    item = None
+    if prop in config:
+        item = config[prop]
+    try:
         _check_if_valid(item, 'config.{0}'.format(prop))
+        return True
+    except ValueError:
+        return False
+
+
+def _create_cert_and_key_files(cert_content, key_content):
+    cert_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
+    cert_file.write(cert_content)
+    cert_file.close()
+    key_file = None
+    if key_content is not None:
+        key_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
+        key_file.write(key_content)
+        key_file.close()
+    return cert_file.name, key_file.name if key_file else None
+
+
+def _delete_cert_and_key_files(cert_file_name, key_file_name):
+    if cert_file_name:
+        unlink(cert_file_name)
+    if key_file_name:
+        unlink(key_file_name)
 
 
 class SecurityContext(object):
@@ -237,7 +280,6 @@ class SecurityContext(object):
             'Application received a token with  "%s".',
             self.get_audience())
 
-
     def _set_user_info(self, jwt_payload):
         if self.get_grant_type() == constants.GRANTTYPE_CLIENTCREDENTIAL:
             return
@@ -291,7 +333,6 @@ class SecurityContext(object):
             self._properties['subaccount_id'] = jwt_payload['zid']
             self._logger.debug('Subaccountid not found. Using zid instead: %s.', jwt_payload['zid'])
 
-
     def _set_scopes(self, jwt_payload):
         self._properties['scopes'] = jwt_payload.get('scope') or []
         self._logger.debug('Obtained scopes: %s.', self._properties['scopes'])
@@ -337,8 +378,6 @@ class SecurityContext(object):
 
         if validation_result is False:
                 raise RuntimeError('Audience Validation Failed')
-
-
 
     def _get_property_of(self, property_name, obj):
         if self.get_grant_type() == constants.GRANTTYPE_CLIENTCREDENTIAL:
@@ -508,28 +547,24 @@ class SecurityContext(object):
                 'Call to /oauth/token was not successful (grant_type: {0}).'.format(
                     grant_type) + ' HTTP status code: {0}'.format(status_code))
 
-    def _get_user_token(self, service_credentials, scopes):
-        assert scopes is not None
-
-        url = '{}/oauth/token'.format(service_credentials['url'])
+    def _get_user_token(self, url, client_id, scopes, auth, cert):
         response = httpx.post(url, headers={
             'Accept': 'application/json',
             'Content-Type': 'application/x-www-form-urlencoded',
         }, data={
             'grant_type': constants.GRANTTYPE_JWT_BEARER,
             'response_type': 'token',
-            'client_id': service_credentials['clientid'],
+            'client_id': client_id,
             'assertion': self._token,
-            'scope': scopes
-        }, auth=(service_credentials['clientid'],  service_credentials['clientsecret']))
-
+            'scope': '' if scopes is None else scopes
+        }, auth=auth, cert=cert)
         self._check_uaa_response(response, url, constants.GRANTTYPE_JWT_BEARER)
         return response.json()['access_token']
 
     def request_token_for_client(self, service_credentials, scopes=''):
         """
         :param service_credentials: The credentials of the service as dict.
-            The attributes clientid, clientsecret and url (UAA) are mandatory.
+            The attributes [clientid, certificate, key and url] or [clientid, clientsecret and url] are mandatory.
 
         :param scopes: comma-separated list of requested scopes for the token,
             e.g. app.scope1,app.scope2. If an empty string is passed, all
@@ -538,15 +573,22 @@ class SecurityContext(object):
 
         :return: Token.
         """
-        if scopes is None:
-            scopes = ''
-
         _check_if_valid(service_credentials, 'service_credentials')
-        for prop in ['clientid', 'clientsecret', 'url']:
-            if prop not in service_credentials:
-                raise ValueError(
-                    '"{0}" not found in "service_credentials"'.format(prop))
-        return self._get_user_token(service_credentials, scopes)
+        _check_config(service_credentials)
+        use_mtls = True if _has_client_certificate_props(service_credentials) else False
+        url = '{}/oauth/token'.format(service_credentials['certurl'] if use_mtls else service_credentials['url'])
+        cert_file_name, key_file_name = None, None
+        try:
+            if use_mtls:
+                cert_file_name, key_file_name = _create_cert_and_key_files(service_credentials['certificate'],
+                                                                           service_credentials.get('key'))
+            return self._get_user_token(url, service_credentials['clientid'], scopes,
+                                        auth=None if use_mtls else (service_credentials['clientid'],
+                                                                    service_credentials['clientsecret']),
+                                        cert=(cert_file_name, key_file_name) if use_mtls else None)
+
+        finally:
+            _delete_cert_and_key_files(cert_file_name, key_file_name)
 
     def has_attributes(self):
         """
