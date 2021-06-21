@@ -131,7 +131,7 @@ class ReqTokenForClientTest(unittest.TestCase):
             'clientid': 'clientid',
             'certificate':  CLIENT_X509_CERTIFICATE,
             'key': CLIENT_X509_KEY,
-            'url': flask_url + '/mtls'
+            'certurl': flask_url + '/mtls'
         }
         token = sec_context.request_token_for_client(service_credentials, None)
         self.assertEqual(token, 'access_token')

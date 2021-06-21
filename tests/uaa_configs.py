@@ -20,7 +20,7 @@ INVALID = {
         'tags': ['xsuaa_clientid_undefined'],
         'uaadomain': 'api.cf.test.com'
     },
-    'uaa_clientsecret_undefined': {
+    'uaa_clientsecret_and_certificate_undefined': {
         'url': 'http://sap-login-test.cfapps.neo.ondemand.com',
         'clientid': 'xs2.node',
         'verificationkey': JWT_SIGNING_PUBLIC_KEY,

@@ -1,10 +1,13 @@
 # pylint: disable=too-many-public-methods
 """ Security Context class """
+import functools
 import tempfile
 from os import environ, unlink
 import json
 from datetime import datetime
 import logging
+from typing import Any, Dict
+
 import httpx
 import deprecation
 import urllib3
@@ -13,6 +16,9 @@ from sap.xssec import constants
 from sap.xssec.jwt_validation_facade import JwtValidationFacade, DecodeError
 from sap.xssec.key_cache import KeyCache
 from sap.xssec.jwt_audience_validator import JwtAudienceValidator
+
+_client_secret_props = ('clientid', 'clientsecret', 'url')  # props for client secret authentication
+_client_certificate_props = ("clientid", "certificate", "certurl")  # props for client certificate authentication
 
 
 def _check_if_valid(item, name):
@@ -24,11 +30,28 @@ def _check_if_valid(item, name):
 
 def _check_config(config):
     _check_if_valid(config, 'config')
-    for prop in ['clientid', 'clientsecret', 'url']:
-        item = None
-        if prop in config:
-            item = config[prop]
+    if not _has_client_secret_props(config) and not _has_client_certificate_props(config):
+        raise ValueError('Either {} or {} should be provided'.
+                         format(','.join(_client_secret_props), ','.join(_client_certificate_props)))
+
+
+def _has_client_secret_props(config):
+    return all(map(functools.partial(_check_prop, config), _client_secret_props))
+
+
+def _has_client_certificate_props(config):
+    return all(map(functools.partial(_check_prop, config), _client_certificate_props))
+
+
+def _check_prop(config: Dict[str, Any], prop: str) -> bool:
+    item = None
+    if prop in config:
+        item = config[prop]
+    try:
         _check_if_valid(item, 'config.{0}'.format(prop))
+        return True
+    except ValueError:
+        return False
 
 
 def _create_cert_and_key_files(cert_content, key_content):
@@ -257,7 +280,6 @@ class SecurityContext(object):
             'Application received a token with  "%s".',
             self.get_audience())
 
-
     def _set_user_info(self, jwt_payload):
         if self.get_grant_type() == constants.GRANTTYPE_CLIENTCREDENTIAL:
             return
@@ -356,8 +378,6 @@ class SecurityContext(object):
 
         if validation_result is False:
                 raise RuntimeError('Audience Validation Failed')
-
-
 
     def _get_property_of(self, property_name, obj):
         if self.get_grant_type() == constants.GRANTTYPE_CLIENTCREDENTIAL:
@@ -554,17 +574,9 @@ class SecurityContext(object):
         :return: Token.
         """
         _check_if_valid(service_credentials, 'service_credentials')
-
-        mtls_attrs = ("url", "clientid", "certificate")  # key is optional
-        cred_attrs = ("url", "clientid", "clientsecret")
-        use_mtls = all(k in service_credentials for k in mtls_attrs)
-        use_cred = not use_mtls and all(k in service_credentials for k in cred_attrs)
-        if not use_mtls and not use_cred:
-            raise ValueError('Either [{}] or [{}] are required in "service_credentials"'.format(
-                ','.join(mtls_attrs), ','.join(cred_attrs)))
-
-        url = '{}/oauth/token'.format(service_credentials['url'].replace('.authentication.', '.authentication.cert.')
-                                      if use_mtls else service_credentials['url'])
+        _check_config(service_credentials)
+        use_mtls = True if _has_client_certificate_props(service_credentials) else False
+        url = '{}/oauth/token'.format(service_credentials['certurl'] if use_mtls else service_credentials['url'])
         cert_file_name, key_file_name = None, None
         try:
             if use_mtls:

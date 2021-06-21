@@ -23,6 +23,7 @@ except ImportError:
 
 # test with sap-jwt if installed
 TEST_PARAMETERS = [(False,), (True,)]
+CONFIG_ERROR_MSG = 'Either clientid,clientsecret,url or clientid,certificate,certurl should be provided'
 
 
 @parameterized_class(('USE_SAP_PY_JWT',), TEST_PARAMETERS)
@@ -79,21 +80,21 @@ class XSSECTest(unittest.TestCase):
     def test_input_validation_invalid_config_url(self):
         ''' input validation: invalid config url '''
         self._check_invalid_params(
-            'valid', uaa_configs.INVALID['uaa_url_undefined'], '"config.url" should not be None')
+            'valid', uaa_configs.INVALID['uaa_url_undefined'], CONFIG_ERROR_MSG)
 
     def test_input_validation_invalid_config_clientid(self):
         ''' input validation: invalid config clientid '''
         self._check_invalid_params(
             'valid',
             uaa_configs.INVALID['uaa_clientid_undefined'],
-            '"config.clientid" should not be None')
+            CONFIG_ERROR_MSG)
 
-    def test_input_validation_invalid_config_clientsecret(self):
+    def test_input_validation_invalid_config_clientsecretand_and_certificate(self):
         ''' input validation: invalid config clientsecret '''
         self._check_invalid_params(
             'valid',
-            uaa_configs.INVALID['uaa_clientsecret_undefined'],
-            '"config.clientsecret" should not be None')
+            uaa_configs.INVALID['uaa_clientsecret_and_certificate_undefined'],
+            CONFIG_ERROR_MSG)
 
     def test_input_validation_invalid_config_xsappname(self):
         ''' input validation: invalid config xsappname '''
