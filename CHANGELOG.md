@@ -5,12 +5,19 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 3.1.0
+### Added
+	
+- Support for tokenexchanges with X.509 certificates managed by XSUAA
+- Support for tokenexchanges with manually managed X.509 certificates
+- Support for configuration objects that does not provide a clientsecret (but a certificate)
+
 ## 3.0.0
 ### Removed
 - Removed support for python 2
 
 ### Changed
-- requests library replaced with httpx for better async support
+- Replaced *requests* library with *httpx* for better async support
 
 ## 2.1.0
 
