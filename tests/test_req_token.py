@@ -1,4 +1,5 @@
 # pylint: disable=missing-docstring,invalid-name,missing-docstring
+import asyncio
 import unittest
 from unittest.mock import patch
 from os import environ, path, devnull
@@ -33,6 +34,8 @@ flask_env['FLASK_APP'] = path.join(path.dirname(
 flask_port = str(get_free_tcp_port())
 flask_url = 'http://localhost:' + flask_port
 
+# Event loop for running async functions in tests
+loop = asyncio.get_event_loop()
 
 class ReqTokenForClientTest(unittest.TestCase):
     DEVNULL = None
@@ -85,12 +88,27 @@ class ReqTokenForClientTest(unittest.TestCase):
     def _setup_get_error(self, mock):
         mock.side_effect = requests.exceptions.SSLError
 
+    def _req_client_service_credentials(self):
+        service_credentials = {
+            'clientid': 'clientid',
+            'clientsecret': 'clientsecret',
+            'url': flask_url + '/correct'
+        }
+        return service_credentials
+
+    def _req_client_sec_context(self):
+        sec_context = xssec.create_security_context(
+            sign(jwt_payloads.USER_TOKEN_JWT_BEARER_FOR_CLIENT), uaa_configs.VALID['uaa'])
+        return sec_context
+
     @patch('httpx.get')
     def test_req_client_for_user_401_error(self, mock_get):
         self._setup_get_error(mock_get)
 
         sec_context = xssec.create_security_context(
             sign(jwt_payloads.USER_TOKEN_JWT_BEARER_FOR_CLIENT), uaa_configs.VALID['uaa'])
+        sec_context = self._req_client_sec_context()
+
         expected_message = \
             'Authorization header invalid, requesting client does'\
             ' not have grant_type={} or no scopes were granted.'.format(constants.GRANTTYPE_JWT_BEARER)
@@ -102,8 +120,7 @@ class ReqTokenForClientTest(unittest.TestCase):
     def test_req_client_for_user_500_error(self, mock_get):
         self._setup_get_error(mock_get)
 
-        sec_context = xssec.create_security_context(
-            sign(jwt_payloads.USER_TOKEN_JWT_BEARER_FOR_CLIENT), uaa_configs.VALID['uaa'])
+        sec_context = self._req_client_sec_context()
         self._request_token_for_client_error(
             sec_context, flask_url + '/500', 'HTTP status code: 500')
 
@@ -111,13 +128,8 @@ class ReqTokenForClientTest(unittest.TestCase):
     def test_req_client_for_user(self, mock_get):
         self._setup_get_error(mock_get)
 
-        sec_context = xssec.create_security_context(
-            sign(jwt_payloads.USER_TOKEN_JWT_BEARER_FOR_CLIENT), uaa_configs.VALID['uaa'])
-        service_credentials = {
-            'clientid': 'clientid',
-            'clientsecret': 'clientsecret',
-            'url': flask_url + '/correct'
-        }
+        sec_context = self._req_client_sec_context()
+        service_credentials = self._req_client_service_credentials()
         token = sec_context.request_token_for_client(service_credentials, None)
         self.assertEqual(token, 'access_token')
 
@@ -134,4 +146,13 @@ class ReqTokenForClientTest(unittest.TestCase):
             'certurl': flask_url + '/mtls'
         }
         token = sec_context.request_token_for_client(service_credentials, None)
+
+    @patch('httpx.get')
+    def test_req_client_for_user_async(self, mock_get):
+        self._setup_get_error(mock_get)
+
+        sec_context = self._req_client_sec_context()
+        service_credentials = self._req_client_service_credentials()
+        coro = sec_context.request_token_for_client_async(service_credentials)
+        token = loop.run_until_complete(coro)
         self.assertEqual(token, 'access_token')
