@@ -35,6 +35,8 @@ setup(
         'urllib3',
         'six>=1.11.0',
         'pyjwt>=2.0.1',
+        'cachetools',
+        'cryptography',
         '{}'.format(sap_py_jwt_dep)
     ],
     long_description=LONG_DESCRIPTION,
