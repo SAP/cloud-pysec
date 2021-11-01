@@ -343,8 +343,8 @@ class SecurityContextXSUAA(object):
         if "uaadomain" in self._config and self._properties['jku'] and self._properties['kid']:
             self._validate_jku()
             try:
-                verification_key = SecurityContext.verificationKeyCache.load_key(self._properties['jku'],
-                                                                                 self._properties['kid'])
+                verification_key = SecurityContextXSUAA.verificationKeyCache.load_key(self._properties['jku'],
+                                                                                      self._properties['kid'])
                 return self._get_jwt_payload(verification_key)
             except (DecodeError, RuntimeError, IOError) as e:
                 self._logger.warning("Warning: Could not validate key: {} Will retry with configured key.".format(e))
