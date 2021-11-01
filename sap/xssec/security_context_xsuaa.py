@@ -73,7 +73,7 @@ def _delete_cert_and_key_files(cert_file_name, key_file_name):
         unlink(key_file_name)
 
 
-class SecurityContext(object):
+class SecurityContextXSUAA(object):
     """ SecurityContext class """
 
     verificationKeyCache = KeyCache()

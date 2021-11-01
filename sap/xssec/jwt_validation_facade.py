@@ -7,7 +7,8 @@ if USE_SAP_PY_JWT:
 
 ALGORITHMS = ['RS256']
 OPTIONS = {
-    'verify_aud': False
+    'verify_aud': False,
+    "verify_exp": True
 }
 
 

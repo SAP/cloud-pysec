@@ -42,7 +42,7 @@ def _download_verification_key_ias(verification_key_url: str, zone_id: Optional[
 
 @thread_safe_by_args
 @default_cache_policy
-def get_verification_key_ias(issuer_url: str, zone_id: Optional[str], kid: str) -> bytes:
+def get_verification_key_ias(issuer_url: str, zone_id: Optional[str], kid: str) -> str:
     verification_key_url: str = _fetch_verification_key_url_ias(issuer_url)
     verification_key_list: List[Dict[str, Any]] = _download_verification_key_ias(verification_key_url, zone_id)
     found = list(filter(lambda k: k["kid"] == kid, verification_key_list))

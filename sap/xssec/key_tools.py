@@ -7,7 +7,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
 
 
-def jwk_to_pem(jwk) -> bytes:
+def jwk_to_pem(jwk) -> str:
     """
         source: https://github.com/jpf/okta-jwks-to-pem/blob/master/jwks_to_pem.py
     """
@@ -29,5 +29,5 @@ def jwk_to_pem(jwk) -> bytes:
     pem = public_key.public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
-    )
+    ).decode()
     return pem

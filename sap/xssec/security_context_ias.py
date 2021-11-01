@@ -1,10 +1,11 @@
 """ Security Context class for IAS support"""
 import logging
-from typing import List, Any, Dict
+from typing import List, Dict
 
 import jwt
 from urllib3.util import Url, parse_url  # type: ignore
 from sap.xssec.jwt_audience_validator import JwtAudienceValidator
+from sap.xssec.jwt_validation_facade import JwtValidationFacade
 from sap.xssec.key_cache import KeyCache
 from sap.xssec.key_cache_v2 import get_verification_key_ias
 
@@ -14,7 +15,7 @@ class SecurityContextIAS(object):
 
     verificationKeyCache = KeyCache()
 
-    def __init__(self, token: str, service_credentials: Dict[str, Any]):
+    def __init__(self, token: str, service_credentials: Dict[str, str]):
         self.token = token
         self.service_credentials = service_credentials
         self.token_payload = jwt.decode(token, options={"verify_signature": False})
@@ -60,11 +61,19 @@ class SecurityContextIAS(object):
         """
         check `exp` and signature in jwt token
         """
-        rs256 = "RS256"
-        if self.token_header["alg"] != rs256:
-            raise ValueError("alg {} not supported".format(self.token_header["alg"]))
-
-        verification_key: bytes = get_verification_key_ias(
+        verification_key: str = get_verification_key_ias(
             self.get_issuer(), self.token_payload.get("zone_uuid"), self.token_header["kid"])
-        jwt.decode(self.token, verification_key, algorithms=[rs256], options={"verify_exp": True})
+        jwt_validator = JwtValidationFacade()
+
+        result_code = jwt_validator.loadPEM(verification_key)
+        if result_code != 0:
+            raise RuntimeError('Invalid verification key, result code {0}'.format(result_code))
+
+        jwt_validator.checkToken(self.token)
+        error_description = jwt_validator.getErrorDescription()
+        if error_description != '':
+            raise RuntimeError(
+                'Error in validation of access token: {0}, result code {1}'.format(
+                    error_description, jwt_validator.getErrorRC()))
+
         return self
