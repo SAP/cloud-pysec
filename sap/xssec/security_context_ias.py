@@ -1,11 +1,9 @@
 """ Security Context class for IAS support"""
 import logging
 from typing import List, Dict
-
-import jwt
 from urllib3.util import Url, parse_url  # type: ignore
 from sap.xssec.jwt_audience_validator import JwtAudienceValidator
-from sap.xssec.jwt_validation_facade import JwtValidationFacade
+from sap.xssec.jwt_validation_facade import JwtValidationFacade, DecodeError
 from sap.xssec.key_cache import KeyCache
 from sap.xssec.key_cache_v2 import get_verification_key_ias
 
@@ -18,10 +16,15 @@ class SecurityContextIAS(object):
     def __init__(self, token: str, service_credentials: Dict[str, str]):
         self.token = token
         self.service_credentials = service_credentials
-        self.token_payload = jwt.decode(token, options={"verify_signature": False})
-        self.token_header = jwt.get_unverified_header(token)
         self.logger = logging.getLogger(__name__)
-        self.validate_issuer().validate_audience().validate_timestamp_and_signature()
+        self.jwt_validator = JwtValidationFacade()
+        self.audience_validator = JwtAudienceValidator(self.service_credentials["clientid"])
+        try:
+            self.token_payload = self.jwt_validator.decode(token, False)
+            self.token_header = self.jwt_validator.get_unverified_header(token)
+            self.validate_issuer().validate_timestamp().validate_audience().validate_signature()
+        except DecodeError:
+            raise ValueError("Failed to decode provided token")
 
     def get_issuer(self):
         return self.token_payload.get("ias_iss") or self.token_payload["iss"]
@@ -47,33 +50,39 @@ class SecurityContextIAS(object):
 
         return self
 
+    def validate_timestamp(self):
+        """
+        check `exp` in jwt token
+        """
+        if self.jwt_validator.has_token_expired(self.token):
+            raise ValueError("Token has expired")
+        return self
+
     def validate_audience(self):
         """
         check `aud` in jwt token
         """
-        audience_validator = JwtAudienceValidator(self.service_credentials["clientid"])
-        validation_result = audience_validator.validate_token(self.token_payload["clientid"], self.token_payload["aud"])
+        validation_result = self.audience_validator.validate_token(audiences_from_token=self.token_payload["aud"])
         if validation_result is False:
             raise RuntimeError('Audience Validation Failed')
         return self
 
-    def validate_timestamp_and_signature(self):
+    def validate_signature(self):
         """
-        check `exp` and signature in jwt token
+        check signature in jwt token
         """
         verification_key: str = get_verification_key_ias(
             self.get_issuer(), self.token_payload.get("zone_uuid"), self.token_header["kid"])
-        jwt_validator = JwtValidationFacade()
 
-        result_code = jwt_validator.loadPEM(verification_key)
+        result_code = self.jwt_validator.loadPEM(verification_key)
         if result_code != 0:
             raise RuntimeError('Invalid verification key, result code {0}'.format(result_code))
 
-        jwt_validator.checkToken(self.token)
-        error_description = jwt_validator.getErrorDescription()
+        self.jwt_validator.checkToken(self.token)
+        error_description = self.jwt_validator.getErrorDescription()
         if error_description != '':
             raise RuntimeError(
                 'Error in validation of access token: {0}, result code {1}'.format(
-                    error_description, jwt_validator.getErrorRC()))
+                    error_description, self.jwt_validator.getErrorRC()))
 
         return self
