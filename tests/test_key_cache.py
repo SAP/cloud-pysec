@@ -1,4 +1,4 @@
-from httpx import Timeout, HTTPStatusError, HTTPError, Response
+from httpx import HTTPStatusError, Response
 from httpx import TimeoutException
 
 from sap.xssec import constants

@@ -1,5 +1,4 @@
 # pylint: disable=missing-docstring,invalid-name,missing-docstring,too-many-public-methods
-from ssl import SSLError
 import unittest
 from os import environ
 from parameterized import parameterized_class
@@ -20,8 +19,7 @@ except ImportError:
     from mock import MagicMock, patch
 
 # test with sap-jwt if installed
-#TEST_PARAMETERS = [(False,), (True,)]
-TEST_PARAMETERS = [(False,)]
+TEST_PARAMETERS = [(False,), (True,)]
 
 
 @parameterized_class(('USE_SAP_PY_JWT',), TEST_PARAMETERS)

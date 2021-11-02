@@ -20,9 +20,6 @@ from sap.xssec.constants import HTTP_TIMEOUT_IN_SECONDS, KEYCACHE_DEFAULT_CACHE_
     KEYCACHE_DEFAULT_CACHE_ENTRY_EXPIRATION_TIME_IN_MINUTES
 from sap.xssec.key_tools import jwk_to_pem
 
-default_cache_policy = cached(cache=TTLCache(
-    maxsize=KEYCACHE_DEFAULT_CACHE_SIZE, ttl=KEYCACHE_DEFAULT_CACHE_ENTRY_EXPIRATION_TIME_IN_MINUTES * 60))
-
 
 def thread_safe_by_args(func):
     lock_dict = defaultdict(Lock)
@@ -56,8 +53,12 @@ def _download_verification_key_ias(verification_key_url: str, zone_id: Optional[
     return resp.json()["keys"]
 
 
+key_cache = TTLCache(
+    maxsize=KEYCACHE_DEFAULT_CACHE_SIZE, ttl=KEYCACHE_DEFAULT_CACHE_ENTRY_EXPIRATION_TIME_IN_MINUTES * 60)
+
+
 @thread_safe_by_args
-@default_cache_policy
+@cached(cache=key_cache)
 def get_verification_key_ias(issuer_url: str, zone_id: Optional[str], kid: str) -> str:
     """
     get verification key for ias
@@ -71,7 +72,7 @@ def get_verification_key_ias(issuer_url: str, zone_id: Optional[str], kid: str) 
 
 
 @thread_safe_by_args
-@default_cache_policy
+@cached(cache=key_cache)
 def get_verification_key_xsuaa(jku: str, kid: str) -> str:
     """
     get verification key for xsuaa

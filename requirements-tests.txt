@@ -1,9 +1,11 @@
 coverage
-cryptography
-flask
-mock
-parameterized
+cryptography~=35.0.0
+flask~=2.0.2
+mock~=4.0.3
+parameterized~=0.8.1
 pylint
-requests
+pytest
+requests~=2.26.0
+respx
 sap_py_jwt
 tox
