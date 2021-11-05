@@ -5,6 +5,11 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 3.3.0
+### Added
+
+- Added IAS support
+
 ## 3.2.0
 ### Added
 
