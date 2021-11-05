@@ -25,7 +25,7 @@ class JwtValidationFacade(object):
 
     def decode(self, token, verify=True):
         try:
-            return jwt.decode(token, verify=verify)
+            return jwt.decode(token, options={"verify_signature": verify})
         except jwt.exceptions.DecodeError as e:
             raise DecodeError(e)
 
@@ -34,6 +34,13 @@ class JwtValidationFacade(object):
             return jwt.get_unverified_header(token)
         except jwt.exceptions.DecodeError as e:
             raise DecodeError(e)
+
+    def has_token_expired(self, token) -> bool:
+        try:
+            jwt.decode(token, options={"verify_signature": False, 'verify_exp': True})
+            return False
+        except jwt.exceptions.ExpiredSignatureError as e:
+            return True
 
     def loadPEM(self, verification_key):
         self._pem = verification_key

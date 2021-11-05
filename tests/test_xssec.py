@@ -6,19 +6,19 @@ from os import environ
 from datetime import datetime
 from parameterized import parameterized_class
 from sap import xssec
-from sap.xssec import constants, jwt_validation_facade, security_context
+from sap.xssec import constants, jwt_validation_facade, security_context_xsuaa
 from sap.conf import config
 from tests import uaa_configs
 from tests import jwt_payloads
 from tests.http_responses import HTTP_SUCCESS
 from tests.jwt_tools import sign
 
-import httpx
 
 try:
     from importlib import reload
     from unittest.mock import MagicMock, patch
 except ImportError:
+    reload = None
     from mock import MagicMock, patch
 
 # test with sap-jwt if installed
@@ -41,7 +41,7 @@ class XSSECTest(unittest.TestCase):
         config.USE_SAP_PY_JWT = self.USE_SAP_PY_JWT
         # reloads needed to propagate changes to USE_SAP_PY_JWT
         reload(jwt_validation_facade)
-        reload(security_context)
+        reload(security_context_xsuaa)
         jwt_validation_facade.ALGORITHMS = ['RS256', 'HS256']
 
         patcher = patch('httpx.get')
@@ -457,7 +457,7 @@ class XSSECTest(unittest.TestCase):
     @patch('httpx.get')
     def test_get_verification_key_from_uaa(self, mock_requests):
         from sap.xssec.key_cache import KeyCache
-        xssec.SecurityContext.verificationKeyCache = KeyCache()
+        xssec.SecurityContextXSUAA.verificationKeyCache = KeyCache()
 
         mock = MagicMock()
         mock_requests.return_value = mock

@@ -4,6 +4,8 @@ flask
 mock
 parameterized
 pylint
+pytest
 requests
+respx
 sap_py_jwt
 tox
