@@ -45,12 +45,12 @@ service instance.
     'clientid' : 'example_clientid'               // the id of the client
     'clientsecret': 'example_clientsecret'        // the secret of the client
     'url': 'example_url'                          // the url of the uaa
+    'uaadomain': 'example_uaadomain'              // the domain of the uaa
     'verificationkey': 'example_verification key' // (optional) the key used for the verfication of the token
 }
 
 ```
-If the `jku` and `kid` are set in the token, the key is requested from the uaa. As a fallback, the key configured in
-`uaa_service` is used. Requested keys are cached for 15 minutes to avoid extensive load on the uaa.
+If the `uaadomain` is set in the `uaa_service` and the `jku` and `kid` are set in the incomming token, the key is requested from the uaa. As a fallback, the `verificationkey` configured in `uaa_service` is used for offline validation. Requested keys are cached for 15 minutes to avoid extensive load on the uaa.
 
 The creation function `xssec.create_security_context` is to be used for an end-user token (e.g. for grant_type `password`
  or grant_type `authorization_code`) where user information is expected to be available within the token and thus within the security context.
@@ -83,6 +83,8 @@ However, if an application absolutely wants to consume token that were issued fo
  an *Access Control List (ACL)* entry for this can be specified in an environment variable named `SAP_JWT_TRUST_ACL`.
  The name of the OAuth client has then the prefix `sb-`, the content is a JSON String, containing an array of identity zones and OAuth2 clients.
  To trust any OAuth2 client and/or identity zones, an * can be used.
+ 
+⚠️From version 2.1.0, the `SAP_JWT_TRUST_ACL` environment variable is no longer supported.
 
 If you want to enable another (foreign) application to use some of your application's scopes, you can add a ```granted-apps``` marker to your scope in the ```xs-security.json``` file (as in the following example). The value of the marker is a list of applications that is allowed to request a token with the denoted scope.
 
