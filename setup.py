@@ -2,7 +2,6 @@
 import codecs
 from os import path
 from setuptools import setup, find_packages
-from sap.conf.config import USE_SAP_PY_JWT
 
 CURRENT_DIR = path.abspath(path.dirname(__file__))
 README_LOCATION = path.join(CURRENT_DIR, 'README.md')
@@ -13,12 +12,6 @@ with open(path.join(CURRENT_DIR, 'version.txt'), 'r') as version_file:
 
 with codecs.open(README_LOCATION, 'r', 'utf-8') as readme_file:
     LONG_DESCRIPTION = readme_file.read()
-
-sap_py_jwt_dep = ''
-if USE_SAP_PY_JWT:
-    sap_py_jwt_dep = 'sap_py_jwt>=1.1.1'
-else:
-    sap_py_jwt_dep = 'cryptography'
 
 setup(
     name='sap_xssec',
@@ -36,8 +29,7 @@ setup(
         'six>=1.11.0',
         'pyjwt>=2.0.1',
         'cachetools>=4.2.4',
-        'cryptography>=35.0.0',
-        '{}'.format(sap_py_jwt_dep)
+        'cryptography>=35.0.0'
     ],
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",

@@ -7,7 +7,6 @@ from datetime import datetime
 from parameterized import parameterized_class
 from sap import xssec
 from sap.xssec import constants, jwt_validation_facade, security_context_xsuaa
-from sap.conf import config
 from tests import uaa_configs
 from tests import jwt_payloads
 from tests.http_responses import HTTP_SUCCESS
@@ -21,25 +20,12 @@ except ImportError:
     reload = None
     from mock import MagicMock, patch
 
-# test with sap-jwt if installed
-TEST_PARAMETERS = [(False,), (True,)]
 CONFIG_ERROR_MSG = 'Either clientid,clientsecret,url or clientid,certificate,certurl should be provided'
 
 
-@parameterized_class(('USE_SAP_PY_JWT',), TEST_PARAMETERS)
 class XSSECTest(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        ''' Test class static setup '''
-        environ['SAP_EXT_JWT_ALG'] = '*'
-
     def setUp(self):
-        if 'SAP_JWT_TRUST_ACL' in environ:
-            del environ['SAP_JWT_TRUST_ACL']
-
-        config.USE_SAP_PY_JWT = self.USE_SAP_PY_JWT
-        # reloads needed to propagate changes to USE_SAP_PY_JWT
         reload(jwt_validation_facade)
         reload(security_context_xsuaa)
         jwt_validation_facade.ALGORITHMS = ['RS256', 'HS256']

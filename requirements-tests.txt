@@ -7,5 +7,4 @@ pylint
 pytest
 requests
 respx
-sap_py_jwt
 tox

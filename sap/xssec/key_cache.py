@@ -87,8 +87,8 @@ class KeyCache(object):
                 if i < HTTP_RETRY_NUMBER_RETRIES and (isinstance(e, TimeoutException) or
                                                       e.response.status_code in HTTP_RETRY_ON_ERROR_CODE):
                     i = i + 1
-                    self._logger.warn("Warning: Error while trying to get key from uaa. {}. Start retry attempt {}".
-                                      format(e, str(i)))
+                    self._logger.warning("Warning: Error while trying to get key from uaa. {}. Start retry attempt {}".
+                                         format(e, str(i)))
                     time.sleep(2**(i-1) * HTTP_RETRY_BACKOFF_FACTOR)
                 else:
                     raise
