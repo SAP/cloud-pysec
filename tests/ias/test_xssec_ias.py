@@ -4,7 +4,6 @@ from os import environ
 from parameterized import parameterized_class
 from sap import xssec
 from sap.xssec import jwt_validation_facade, security_context_ias
-from sap.conf import config
 from tests.ias import ias_configs
 from tests.ias.ias_configs import SERVICE_CREDENTIALS
 from tests.ias.ias_tokens import TOKEN_INVALID_ISSUER, VALID_TOKEN, TOKEN_INVALID_AUDIENCE, TOKEN_EXPIRED, PAYLOAD, \
@@ -18,23 +17,10 @@ except ImportError:
     reload = None
     from mock import MagicMock, patch
 
-# test with sap-jwt if installed
-TEST_PARAMETERS = [(False,), (True,)]
 
-
-@parameterized_class(('USE_SAP_PY_JWT',), TEST_PARAMETERS)
 class IASXSSECTest(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        environ['SAP_EXT_JWT_ALG'] = '*'
-
     def setUp(self):
-        if 'SAP_JWT_TRUST_ACL' in environ:
-            del environ['SAP_JWT_TRUST_ACL']
-
-        config.USE_SAP_PY_JWT = self.USE_SAP_PY_JWT
-        # reloads needed to propagate changes to USE_SAP_PY_JWT
         reload(jwt_validation_facade)
         reload(security_context_ias)
 

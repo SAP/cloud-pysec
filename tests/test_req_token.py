@@ -44,7 +44,6 @@ class ReqTokenForClientTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """ Test class static setup """
-        environ["SAP_EXT_JWT_ALG"] = "*"
 
         cls.DEVNULL = open(devnull, 'w')
         cls.flask_process = Popen(['flask', 'run', '-p', flask_port, '-h', 'localhost'],
