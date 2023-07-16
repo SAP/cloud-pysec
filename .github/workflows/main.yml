@@ -30,7 +30,10 @@ jobs:
         pip install --upgrade virtualenv
         pip install -U tox importlib_metadata
     - name: Run tox
-      run: tox -e py${{ matrix.python-version }} -replace(".", "")
+      run: |
+        pythonVersion=${{ matrix.python-version }}
+        pythonVersion=${pythonVersion//./}
+        tox -e py${pythonVersion}
 
   deploy:
     needs: build
