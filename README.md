@@ -80,13 +80,7 @@ Inside the credentials section in the environment variable `VCAP_SERVICES`, the 
 By default, the offline validation check will only accept tokens intended for the same OAuth2 client in the same UAA identity zone.
 This makes sense and will cover the vast majority of use cases.
 
-~~However, if an application absolutely wants to consume token that were issued for either different OAuth2 clients or different identity zones,
- an *Access Control List (ACL)* entry for this can be specified in an environment variable named `SAP_JWT_TRUST_ACL`.
- The name of the OAuth client has then the prefix `sb-`, the content is a JSON String, containing an array of identity zones and OAuth2 clients.
- To trust any OAuth2 client and/or identity zones, an * can be used.~~
- 
 ⚠️From version 2.1.0, the `SAP_JWT_TRUST_ACL` environment variable is no longer supported.
-
 
 If you want to enable another (foreign) application to use some of your application's scopes, you can add a ```granted-apps``` marker to your scope in the ```xs-security.json``` file (as in the following example). The value of the marker is a list of applications that is allowed to request a token with the denoted scope.
 
@@ -120,10 +114,10 @@ If you want to enable another (foreign) application to use some of your applicat
 ~~To configure whether the *sap-jwt* or the *py-jwt* library should be used for validation of the jwt token, 
 change the `USE_SAP_PY_JWT` environment variable to `true`.~~
 
-⚠️From version 4.0.0, the `USE_SAP_PY_JWT` environment variable is no longer supported and therefore only *py-jwt* is supported.
+⚠️From version 4.0.0, the `USE_SAP_PY_JWT` environment variable is no longer supported and therefore *py-jwt* is installed by default.
 
 # Requirements
-*sap_xssec* requires *python 3.6* or newer.
+*sap_xssec* requires *python 3.7* or newer.
 
 
 # Download and Installation
