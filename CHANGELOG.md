@@ -5,9 +5,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 4.0.1
+### Fixed
+- Bug: fix `aud` validation for IAS tokens
+
 ## 4.0.0
 ### Removed
-- Removed suport for sap_py_jwt.
+- Removed suport for sap_py_jwt
 
 ## 3.3.0
 ### Added

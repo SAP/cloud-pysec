@@ -95,6 +95,7 @@ ENV/
 
 # IDE
 .vscode/
+.devcontainer/
 
 # local tests
 local_tests/
