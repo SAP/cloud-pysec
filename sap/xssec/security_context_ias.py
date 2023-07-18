@@ -62,7 +62,11 @@ class SecurityContextIAS(object):
         """
         check `aud` in jwt token
         """
-        validation_result = self.audience_validator.validate_token(audiences_from_token=self.token_payload["aud"])
+
+        # Make sure `aud` is a list
+        aud = [self.token_payload["aud"]] if isinstance(self.token_payload["aud"], str) else self.token_payload["aud"]
+        
+        validation_result = self.audience_validator.validate_token(audiences_from_token=aud)
         if validation_result is False:
             raise RuntimeError('Audience Validation Failed')
         return self
