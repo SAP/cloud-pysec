@@ -122,7 +122,7 @@ class SecurityContextXSUAA(object):
         uaa_domain: str = self._config.get('uaadomain') or self._config.get('url')
         if not uaa_domain:
             raise RuntimeError("Service is not properly configured in 'VCAP_SERVICES'")
-        uaa_domain = re.sub(r'https://', '', uaa_domain)
+        uaa_domain = re.sub(r'^https://', '', uaa_domain)
         payload = self._jwt_validator.decode(self._token, verify=False)
         zid = payload.get("zid")
         return f"https://{uaa_domain}/token_keys?zid={zid}" if zid else f"https://{uaa_domain}/token_keys"
