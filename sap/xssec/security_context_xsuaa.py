@@ -1,6 +1,7 @@
 # pylint: disable=too-many-public-methods
 """ Security Context class """
 import functools
+import re
 import tempfile
 from os import environ, unlink
 import json
@@ -10,7 +11,6 @@ from typing import Any, Dict
 
 import httpx
 import deprecation
-import urllib3
 
 from sap.xssec import constants
 from sap.xssec.jwt_validation_facade import JwtValidationFacade, DecodeError
@@ -118,17 +118,14 @@ class SecurityContextXSUAA(object):
                                      ' the manifest.yml (legacy) as well as in xs-security.json.'
                                      ' Remove it in manifest.yml.')
 
-    def _validate_jku(self):
-        # configured uaa domain must be part of jku in order to trust jku
-        uaa_domain = self._config['uaadomain']
-
+    def _get_jku(self):
+        uaa_domain: str = self._config.get('uaadomain') or self._config.get('url')
         if not uaa_domain:
             raise RuntimeError("Service is not properly configured in 'VCAP_SERVICES'")
-
-        jku_url = urllib3.util.parse_url(self._properties['jku'])
-        if not jku_url.hostname.endswith(uaa_domain):
-            self._logger.error("Error: Do not trust jku '{}' because it does not match uaa domain".format(self._properties['jku']))
-            raise RuntimeError("JKU of token is not trusted")
+        uaa_domain = re.sub(r'^https://', '', uaa_domain)
+        payload = self._jwt_validator.decode(self._token, verify=False)
+        zid = payload.get("zid")
+        return f"https://{uaa_domain}/token_keys?zid={zid}" if zid else f"https://{uaa_domain}/token_keys"
 
     def _set_token_properties(self):
 
@@ -338,13 +335,11 @@ class SecurityContextXSUAA(object):
         self._logger.debug('Obtained scopes: %s.', self._properties['scopes'])
 
     def _validate_token(self):
-        """ Try to retrieve the key from the uaa if jku and kid is set. Otherwise use configured one."""
-
-        if "uaadomain" in self._config and self._properties['jku'] and self._properties['kid']:
-            self._validate_jku()
+        """ Try to retrieve the key from the composed jku if kid is set. Otherwise use configured one."""
+        if self._properties['kid']:
             try:
-                verification_key = SecurityContextXSUAA.verificationKeyCache.load_key(self._properties['jku'],
-                                                                                      self._properties['kid'])
+                jku = self._get_jku()
+                verification_key = SecurityContextXSUAA.verificationKeyCache.load_key(jku, self._properties['kid'])
                 return self._get_jwt_payload(verification_key)
             except (DecodeError, RuntimeError, IOError) as e:
                 self._logger.warning("Warning: Could not validate key: {} Will retry with configured key.".format(e))
