@@ -60,7 +60,7 @@ def well_known_endpoint_mock(respx_mock):
 
 
 def jwk_endpoint_response(request: Request):
-    if all(k in request.headers for k in ("x-app-tid", "x-azp", "x-client-id")):
+    if all(k in request.headers for k in ("x-app_tid", "x-azp", "x-client_id")):
         return Response(200, json=JWKS)
     else:
         return Response(404)

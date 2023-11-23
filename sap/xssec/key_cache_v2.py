@@ -48,9 +48,9 @@ def _download_verification_key_ias(verification_key_url: str, app_tid: str, azp:
     get all the keys from verification key url
     """
     headers = {
-        'x-app-tid': app_tid,
+        'x-app_tid': app_tid,
         'x-azp': azp,
-        'x-client-id': client_id,
+        'x-client_id': client_id,
         'Accept': 'application/json',
     }
     headers = {k: v for k, v in headers.items() if v is not None}
