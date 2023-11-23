@@ -458,14 +458,22 @@ class XSSECTest(unittest.TestCase):
             sec_context.get_clone_service_instance_id(), 'abcd1234')
         self.assertEqual(
             sec_context.get_additional_auth_attribute('external_group'), 'domaingroup1')
-        mock_requests.assert_called_once_with("https://api.cf.test.com", timeout=constants.HTTP_TIMEOUT_IN_SECONDS)
+        mock_requests.assert_called_once_with("https://api.cf.test.com/token_keys?zid=test-idz",
+                                              timeout=constants.HTTP_TIMEOUT_IN_SECONDS)
 
-    def test_not_trusted_jku(self):
+    @patch('httpx.get')
+    def test_composed_jku_with_uaadomain(self, mock_requests):
+        from sap.xssec.key_cache import KeyCache
+        xssec.SecurityContextXSUAA.verificationKeyCache = KeyCache()
 
-        with self.assertRaises(RuntimeError) as e:
-            xssec.create_security_context(sign(jwt_payloads.USER_TOKEN), uaa_configs.VALID['uaa_no_verification_key_other_domain'])
+        mock = MagicMock()
+        mock_requests.return_value = mock
+        mock.json.return_value = HTTP_SUCCESS
 
-        self.assertEqual("JKU of token is not trusted", str(e.exception),)
+        xssec.create_security_context(
+            sign(jwt_payloads.USER_TOKEN), uaa_configs.VALID['uaa_no_verification_key_other_domain'])
+        mock_requests.assert_called_once_with("https://api.cf2.test.com/token_keys?zid=test-idz",
+                                              timeout=constants.HTTP_TIMEOUT_IN_SECONDS)
 
     def test_valid_xsa_token_attributes(self):
         ''' valid client credentials token (with attributes) '''
@@ -475,7 +483,6 @@ class XSSECTest(unittest.TestCase):
         self.assertEqual(
             sec_context.get_logon_name(), 'ADMIN')
 
-
     def test_valid_xsa_token_with_newlines(self):
         ''' valid client credentials token (with attributes) '''
         sec_context = xssec.create_security_context(
@@ -484,12 +491,20 @@ class XSSECTest(unittest.TestCase):
         self.assertEqual(
             sec_context.get_logon_name(), 'ADMIN')
 
-    def test_invalid_jku_in_token_header(self):
+    @patch('httpx.get')
+    def test_ignored_invalid_jku_in_token_header(self, mock_requests):
+        from sap.xssec.key_cache import KeyCache
+        xssec.SecurityContextXSUAA.verificationKeyCache = KeyCache()
+
         uaa_config = uaa_configs.VALID['uaa']
         token = sign(jwt_payloads.USER_TOKEN, headers={
             "jku": 'http://ana.ondemandh.com\\\\\\\\\\\\\\\\@' + uaa_config['uaadomain'],
             "kid": "key-id-0"
         })
-        with self.assertRaises(RuntimeError) as e:
-            xssec.create_security_context(token, uaa_config)
-        self.assertEqual("JKU of token is not trusted", str(e.exception),)
+        mock = MagicMock()
+        mock_requests.return_value = mock
+        mock.json.return_value = HTTP_SUCCESS
+
+        xssec.create_security_context(token, uaa_config)
+        mock_requests.assert_called_once_with("https://api.cf.test.com/token_keys?zid=test-idz",
+                                              timeout=constants.HTTP_TIMEOUT_IN_SECONDS)
