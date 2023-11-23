@@ -6,7 +6,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
-## 4.0.2
+## 4.1.0
 ### Changed
 - Removed JKU validation for XSUAA tokens and replaced it with composing JKU using UAA Domain.
 - Added extra HTTP headers for improved IAS verification key retrieval.
