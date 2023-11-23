@@ -1,5 +1,6 @@
 """ Security Context class for IAS support"""
 import logging
+import re
 from typing import List, Dict
 from urllib3.util import Url, parse_url  # type: ignore
 from sap.xssec.jwt_audience_validator import JwtAudienceValidator
@@ -45,7 +46,12 @@ class SecurityContextIAS(object):
 
         domains: List[str] = self.service_credentials.get("domains") or (
             [self.service_credentials["domain"]] if "domain" in self.service_credentials else [])
-        if not any(map(lambda d: issuer_url.host.endswith(d), domains)):
+
+        def validate_issuer_subdomain(parent_domain) -> bool:
+            pattern = r'^https://[a-zA-Z0-9-]{{1,63}}\.{parent_domain}$'.format(parent_domain=re.escape(parent_domain))
+            return bool(re.match(pattern, self.get_issuer()))
+
+        if not any(map(validate_issuer_subdomain, domains)):
             raise ValueError("Token's issuer is not found in domain list {}".format(", ".join(domains)))
 
         return self
