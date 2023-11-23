@@ -11,7 +11,7 @@ Improvement: use dedicated lock for each cache entry key
 from collections import defaultdict
 from functools import _make_key # noqa
 from threading import Lock
-from typing import Optional, List, Dict, Any
+from typing import List, Dict, Any
 
 import httpx
 from cachetools import cached, TTLCache
@@ -42,12 +42,18 @@ def _fetch_verification_key_url_ias(issuer_url: str) -> str:
     return resp.json()["jwks_uri"]
 
 
-def _download_verification_key_ias(verification_key_url: str, zone_id: Optional[str]) -> List[Dict[str, Any]]:
+def _download_verification_key_ias(verification_key_url: str, app_tid: str, azp: str,
+                                   client_id: str) -> List[Dict[str, Any]]:
     """
     get all the keys from verification key url
     """
-    default_headers = {'Accept': 'application/json'}
-    headers = default_headers if zone_id is None else {**default_headers, "x-zone_uuid": zone_id}
+    headers = {
+        'x-app-tid': app_tid,
+        'x-azp': azp,
+        'x-client-id': client_id,
+        'Accept': 'application/json',
+    }
+    headers = {k: v for k, v in headers.items() if v is not None}
     resp = httpx.get(verification_key_url, headers=headers, timeout=HTTP_TIMEOUT_IN_SECONDS)
     resp.raise_for_status()
     return resp.json()["keys"]
@@ -59,12 +65,13 @@ key_cache = TTLCache(
 
 @thread_safe_by_args
 @cached(cache=key_cache)
-def get_verification_key_ias(issuer_url: str, zone_id: Optional[str], kid: str) -> str:
+def get_verification_key_ias(issuer_url: str, app_tid: str, azp: str, client_id: str, kid: str) -> str:
     """
     get verification key for ias
     """
     verification_key_url: str = _fetch_verification_key_url_ias(issuer_url)
-    verification_key_list: List[Dict[str, Any]] = _download_verification_key_ias(verification_key_url, zone_id)
+    verification_key_list: List[Dict[str, Any]] = _download_verification_key_ias(verification_key_url, app_tid, azp,
+                                                                                 client_id)
     found = list(filter(lambda k: k["kid"] == kid, verification_key_list))
     if len(found) == 0:
         raise ValueError("Could not find key with kid {}".format(kid))

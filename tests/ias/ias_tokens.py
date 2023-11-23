@@ -23,6 +23,7 @@ PAYLOAD = {
         "user_uuid": "db60e49c-1fb7-4a15-9a9e-8ababf856fe9",
         "azp": "70af88d4-0371-4374-b4f5-f24f650bfac5",
         "zone_uuid": "4b0c2b7a-1279-4352-a68d-a9a228a4f1e9",
+        "app_tid": "4b0c2b7a-1279-4352-a68d-a9a228a4f1e9",
         "iat": 1470815434,
         "exp": 2101535434,
         "family_name": "Nachname",

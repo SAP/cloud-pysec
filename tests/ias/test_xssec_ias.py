@@ -17,6 +17,14 @@ except ImportError:
     reload = None
     from mock import MagicMock, patch
 
+VERIFICATION_KEY_PARAMS = {
+    "issuer_url": PAYLOAD["iss"],
+    "app_tid": PAYLOAD["app_tid"] or PAYLOAD["zone_uuid"],
+    "azp": PAYLOAD["azp"],
+    "client_id": SERVICE_CREDENTIALS["clientid"],
+    "kid": HEADER["kid"]
+}
+
 
 class IASXSSECTest(unittest.TestCase):
 
@@ -27,7 +35,7 @@ class IASXSSECTest(unittest.TestCase):
     @patch('sap.xssec.security_context_ias.get_verification_key_ias', return_value=JWT_SIGNING_PUBLIC_KEY)
     def test_input_validation_valid_token(self, get_verification_key_ias_mock):
         xssec.create_security_context_ias(VALID_TOKEN, ias_configs.SERVICE_CREDENTIALS)
-        get_verification_key_ias_mock.assert_called_with(PAYLOAD["iss"], PAYLOAD["zone_uuid"], HEADER["kid"])
+        get_verification_key_ias_mock.assert_called_with(**VERIFICATION_KEY_PARAMS)
 
     def test_input_validation_invalid_token(self):
         with self.assertRaises(ValueError) as ctx:

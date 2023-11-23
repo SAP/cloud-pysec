@@ -76,7 +76,12 @@ class SecurityContextIAS(object):
         check signature in jwt token
         """
         verification_key: str = get_verification_key_ias(
-            self.get_issuer(), self.token_payload.get("zone_uuid"), self.token_header["kid"])
+            issuer_url=self.get_issuer(),
+            app_tid=self.token_payload.get("app_tid") or self.token_payload.get("zone_uuid"),
+            azp=self.token_payload.get("azp"),
+            client_id=self.service_credentials["clientid"],
+            kid=self.token_header["kid"],
+        )
 
         result_code = self.jwt_validator.loadPEM(verification_key)
         if result_code != 0:
