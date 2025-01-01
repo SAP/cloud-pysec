@@ -47,7 +47,7 @@ class JwtValidationFacade(object):
             self._payload = jwt.decode(token, self._pem, algorithms=ALGORITHMS, options=OPTIONS)
             self._error_desc = ''
             self._error_code = 0
-        except jwt.exceptions.InvalidTokenError as e:
+        except (jwt.exceptions.InvalidTokenError, jwt.exceptions.InvalidKeyError) as e:
             self._error_desc = str(e)
             self._error_code = 1
         except ValueError as e:
