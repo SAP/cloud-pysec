@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## 4.2.0
 ### Changed
-- Allow `issuer` field without `https://` Prefix in IAS token
+- Allow `issuer` field without `https://` prefix in IAS token
 
 ## 4.1.0
 ### Changed
