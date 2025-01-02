@@ -14,7 +14,7 @@ with codecs.open(README_LOCATION, 'r', 'utf-8') as readme_file:
     LONG_DESCRIPTION = readme_file.read()
 
 setup(
-    name='sap_xssec',
+    name='sap-xssec',
     url='https://github.com/SAP/cloud-pysec',
     version=VERSION.strip(),
     author='SAP SE',
