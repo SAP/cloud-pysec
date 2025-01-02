@@ -1,7 +1,7 @@
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP/cloud-pysec)](https://api.reuse.software/info/github.com/SAP/cloud-pysec)
 
 # Description
-This project is a python client library called *sap_xssec* for validation of *OAuth access tokens* issued by the *XSUAA*. 
+This project is a python client library called *sap-xssec* for validation of *OAuth access tokens* issued by the *XSUAA*. 
 
 ### OAuth Authorization Code Flow
 The typical web application use the OAuth authorization code flow for authentication, which is described as follows:
@@ -11,7 +11,7 @@ to the OAuth server for authorization.
 3. Upon authentication, the web application uses the code issued by the authorization server to request an access token.
 4. The web application uses the access token to request data from the OAuth resource server.
 The OAuth resource server validates the token using online or offline validation.
-For this validation libraries like sap_xssec are used.
+For this validation libraries like sap-xssec are used.
 
 
 ![alt text](https://raw.githubusercontent.com/SAP/cloud-security-xsuaa-integration/1.4.0/images/oauth.png "OAuth authorization code flow")
@@ -74,7 +74,7 @@ security_context.get_clientid()
 More details on the API can be found in the [wiki](https://github.com/SAP/cloud-pysec/wiki).
 ### Offline Validation
 
-sap_xssec offers offline validation of the access token, which requires no additional call to the UAA.
+sap-xssec offers offline validation of the access token, which requires no additional call to the UAA.
 The trust for this offline validation is created by binding the XS UAA service instance to your application.
 Inside the credentials section in the environment variable `VCAP_SERVICES`, the key for validation of tokens is included.
 By default, the offline validation check will only accept tokens intended for the same OAuth2 client in the same UAA identity zone.
@@ -117,12 +117,12 @@ change the `USE_SAP_PY_JWT` environment variable to `true`.~~
 ⚠️From version 4.0.0, the `USE_SAP_PY_JWT` environment variable is no longer supported and therefore *py-jwt* is installed by default.
 
 # Requirements
-*sap_xssec* requires *python 3.7* or newer.
+*sap-xssec* requires *python 3.7* or newer.
 
 
 # Download and Installation
-As this package is deployed to PyPI, you can simply add `sap_xssec` as a dependency to your python project or 
-install this package by running `pip install sap_xssec`.
+As this package is deployed to PyPI, you can simply add `sap-xssec` as a dependency to your python project or 
+install this package by running `pip install sap-xssec`.
 
 # Known Issues
 # How to obtain support
