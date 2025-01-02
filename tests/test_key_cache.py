@@ -16,7 +16,7 @@ threadErrors = False
 
 
 @patch('time.time', return_value=MOCKED_CURRENT_TIME)
-@patch('httpx.get')
+@patch('sap.xssec.key_cache.httpx.get', return_value=MagicMock())
 class CacheTest(unittest.TestCase):
 
     def setUp(self):
