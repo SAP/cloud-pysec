@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 4.2.0
+### Changed
+- Allow `issuer` field without `https://` Prefix in IAS token
+
 ## 4.1.0
 ### Changed
 - Removed JKU validation for XSUAA tokens and replaced it with composing JKU using UAA Domain.
