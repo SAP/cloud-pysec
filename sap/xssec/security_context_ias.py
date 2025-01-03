@@ -28,7 +28,8 @@ class SecurityContextIAS(object):
             raise ValueError("Failed to decode provided token")
 
     def get_issuer(self):
-        return self.token_payload.get("ias_iss") or self.token_payload["iss"]
+        issuer = self.token_payload.get("ias_iss") or self.token_payload["iss"]
+        return issuer if issuer.startswith("https://") else f"https://{issuer}"
 
     def validate_issuer(self):
         """
