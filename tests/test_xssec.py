@@ -4,7 +4,6 @@ import unittest
 import json
 from os import environ
 from datetime import datetime
-from parameterized import parameterized_class
 from sap import xssec
 from sap.xssec import constants, jwt_validation_facade, security_context_xsuaa
 from tests import uaa_configs

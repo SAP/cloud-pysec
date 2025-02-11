@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 4.2.1
+### Added
+- Allow overriding HTTP timeout using environment variable `XSSEC_HTTP_TIMEOUT_IN_SECONDS`
+
 ## 4.2.0
 ### Changed
 - Allow `issuer` field without `https://` prefix in IAS token
