@@ -1,0 +1,10 @@
+version = 1
+SPDX-PackageName = "cloud-pysec"
+SPDX-PackageSupplier = "Allen Liu <allen.liu05@sap.com>"
+SPDX-PackageDownloadLocation = "https://github.com/SAP/cloud-pysec"
+
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2019-2020 SAP SE or an SAP affiliate company and cloud-pysec contributors"
+SPDX-License-Identifier = "Apache-2.0"
