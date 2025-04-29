@@ -24,7 +24,7 @@ setup(
     test_suite='tests',
     install_requires=[
         'deprecation>=2.1.0',
-        'httpx>=0.16.1',
+        'httpx>=0.28.1',
         'urllib3',
         'six>=1.11.0',
         'pyjwt>=2.0.1',
