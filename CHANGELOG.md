@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 ## 4.2.2
 ### Changed
 - Bumped transitive dependency `h11` to version `0.16` to address `CVE-2025-43859`.
+- Disable support for 
 
 ## 4.2.1
 ### Added

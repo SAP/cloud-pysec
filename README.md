@@ -117,7 +117,7 @@ change the `USE_SAP_PY_JWT` environment variable to `true`.~~
 ⚠️From version 4.0.0, the `USE_SAP_PY_JWT` environment variable is no longer supported and therefore *py-jwt* is installed by default.
 
 # Requirements
-*sap-xssec* requires *python 3.7* or newer.
+*sap-xssec* requires *python 3.8* or newer.
 
 
 # Download and Installation
