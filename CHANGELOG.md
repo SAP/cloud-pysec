@@ -6,6 +6,14 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 4.2.2
+### Changed
+- Bumped transitive dependency `h11` to version `0.16` to address `CVE-2025-43859`.
+### Removed
+- Dropped support for Python 3.7 (EOL as of June 2023)
+### Added
+- Added support for Python 3.12
+
 ## 4.2.1
 ### Added
 - Allow overriding HTTP timeout using environment variable `XSSEC_HTTP_TIMEOUT_IN_SECONDS`
