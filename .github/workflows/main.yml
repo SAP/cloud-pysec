@@ -8,6 +8,8 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions: read-all
+
 jobs:
   build:
     permissions:
@@ -34,6 +36,7 @@ jobs:
           tox -e py${pythonVersion}
 
   deploy:
+    environment: pypi
     permissions:
       contents: read
     needs: build
