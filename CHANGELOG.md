@@ -6,6 +6,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 4.3.0
+### Security
+- Bumped `PyJWT` dependency to `>=2.13.0` to address CVE-2026-48526 (algorithm confusion / JWK HMAC key confusion vulnerability, CVSS 7.4 High)
+### Removed
+- Dropped support for Python 3.8 (EOL as of October 2024); `pyjwt>=2.13.0` requires Python >=3.9
+
 ## 4.2.2
 ### Changed
 - Bumped transitive dependency `h11` to version `0.16` to address `CVE-2025-43859`.

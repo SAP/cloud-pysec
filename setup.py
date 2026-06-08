@@ -22,12 +22,13 @@ setup(
     packages=find_packages(include=['sap*']),
     data_files=[('.', ['version.txt', 'CHANGELOG.md'])],
     test_suite='tests',
+    python_requires='>=3.9',
     install_requires=[
         'deprecation>=2.1.0',
         'httpx>=0.28.1',
         'urllib3',
         'six>=1.11.0',
-        'pyjwt>=2.0.1',
+        'pyjwt>=2.13.0',
         'cachetools>=4.2.4',
         'cryptography>=35.0.0'
     ],
@@ -46,7 +47,6 @@ setup(
         "Operating System :: Microsoft :: Windows",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
