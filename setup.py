@@ -24,13 +24,11 @@ setup(
     test_suite='tests',
     python_requires='>=3.9',
     install_requires=[
-        'deprecation>=2.1.0',
         'httpx>=0.28.1',
-        'urllib3',
-        'six>=1.11.0',
+        'urllib3>=2.6.3',
         'pyjwt>=2.13.0',
-        'cachetools>=4.2.4',
-        'cryptography>=35.0.0'
+        'cachetools>=6.2.6',
+        'cryptography>=49.0.0'
     ],
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
