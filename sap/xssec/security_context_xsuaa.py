@@ -3,6 +3,7 @@
 import functools
 import re
 import tempfile
+import warnings
 from os import environ, unlink
 import json
 from datetime import datetime
@@ -10,7 +11,6 @@ import logging
 from typing import Any, Dict
 
 import httpx
-import deprecation
 
 from sap.xssec import constants
 from sap.xssec.jwt_validation_facade import JwtValidationFacade, DecodeError
@@ -26,6 +26,20 @@ def _check_if_valid(item, name):
         raise ValueError('"{0}" should not be None'.format(name))
     if isinstance(item, str) and len(item) < 1:
         raise ValueError('"{0}" should not be an empty string'.format(name))
+
+
+def _deprecated(deprecated_in, details=""):
+    """Mark a function as deprecated, emitting a DeprecationWarning when called."""
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            message = "{0} is deprecated as of {1}.".format(func.__name__, deprecated_in)
+            if details:
+                message += " " + details
+            warnings.warn(message, category=DeprecationWarning, stacklevel=2)
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 
 def _check_config(config):
@@ -384,7 +398,7 @@ class SecurityContextXSUAA(object):
     def _get_user_info_property(self, property_name):
         return self._get_property_of(property_name, self._properties['user_info'])
 
-    @deprecation.deprecated(deprecated_in="2.0.11", details="Use the get_zone_id method instead")
+    @_deprecated(deprecated_in="2.0.11", details="Use the get_zone_id method instead")
     def get_identity_zone(self):
         """:return: The identity zone. """
         return self._properties['zone_id']

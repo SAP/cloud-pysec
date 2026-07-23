@@ -6,6 +6,15 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 4.4.0
+### Changed
+- Bumped `cryptography` to `>=49.0.0`, `cachetools` to `>=7.1.4`, and pinned `urllib3` to `>=2.7.0` to meet the SDOL-005 12-month component-age requirement.
+### Removed
+- Removed the unused `six` dependency.
+- Removed the `deprecation` dependency (upstream abandoned since 2020) and replaced its single decorator usage with an in-repo `DeprecationWarning` decorator. Public behavior of `get_identity_zone()` is unchanged; it still emits a deprecation warning.
+### Security
+- Added `SDOL-005.md` documenting the OSS update and maintenance strategy, including a risk assessment for `httpx` (`>=0.28.1`, maintained but latest stable release is older than 12 months). Downstream SAP consumers may reference this document in their own SDOL-005 evidence.
+
 ## 4.3.0
 ### Security
 - Bumped `PyJWT` dependency to `>=2.13.0` to address CVE-2026-48526 (algorithm confusion / JWK HMAC key confusion vulnerability, CVSS 7.4 High)
