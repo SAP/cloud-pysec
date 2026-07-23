@@ -1,6 +1,7 @@
 # pylint: disable=missing-docstring,invalid-name,missing-docstring
 import asyncio
 import unittest
+from importlib import reload
 from unittest.mock import patch
 from os import environ, path, devnull
 import socket
@@ -73,6 +74,7 @@ class ReqTokenForClientTest(unittest.TestCase):
             cls.flask_process.terminate()
         if cls.DEVNULL:
             cls.DEVNULL.close()
+        reload(jwt_validation_facade)
 
     def _request_token_for_client_error(self, sec_context, url, error_message_end):
         service_credentials = {
