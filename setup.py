@@ -25,7 +25,7 @@ setup(
     python_requires='>=3.9',
     install_requires=[
         'httpx>=0.28.1',
-        'urllib3>=2.7.0',
+        'urllib3>=2.6.3',
         'pyjwt>=2.13.0',
         'cachetools>=6.2.6',
         'cryptography>=49.0.0'
