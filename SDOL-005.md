@@ -35,10 +35,16 @@ Declared in `setup.py`.
 | Component | Constraint | Latest release | Released | Status |
 | --- | --- | --- | --- | --- |
 | cryptography | `>=49.0.0` | 49.0.0 | 2026-06-12 | Current |
-| cachetools | `>=7.1.4` | 7.1.5 | 2026-07-22 | Current |
+| cachetools | `>=6.2.6` | 7.1.5 | 2026-07-22 | Current |
 | urllib3 | `>=2.7.0` | 2.7.0 | 2026-05-07 | Current |
 | pyjwt | `>=2.13.0` | 2.13.0 | 2026-05-21 | Current |
 | httpx | `>=0.28.1` | 0.28.1 | 2024-12-06 | Risk-assessed (see below) |
+
+`cachetools` is floored at `>=6.2.6` (released 2026-01-27, still within 12 months)
+rather than the newest `7.x` line, because `cachetools>=7.0.0` requires Python
+`>=3.10` while this library still supports Python 3.9. On Python 3.10+, pip will
+resolve to the current `7.x` release.
+
 
 Removed components:
 

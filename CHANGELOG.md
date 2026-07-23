@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## 4.4.0
 ### Changed
-- Bumped `cryptography` to `>=49.0.0`, `cachetools` to `>=7.1.4`, and pinned `urllib3` to `>=2.7.0` to meet the SDOL-005 12-month component-age requirement.
+- Bumped `cryptography` to `>=49.0.0`, `cachetools` to `>=6.2.6`, and pinned `urllib3` to `>=2.7.0` to meet the SDOL-005 12-month component-age requirement. `cachetools` is floored at `6.2.6` (not `7.x`) to retain Python 3.9 support, as `cachetools>=7.0.0` requires Python `>=3.10`.
 ### Removed
 - Removed the unused `six` dependency.
 - Removed the `deprecation` dependency (upstream abandoned since 2020) and replaced its single decorator usage with an in-repo `DeprecationWarning` decorator. Public behavior of `get_identity_zone()` is unchanged; it still emits a deprecation warning.
