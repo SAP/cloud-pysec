@@ -6,6 +6,10 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
+## 4.5.0
+### Added
+- Added support for the JWS signature algorithms `RS384`, `RS512`, `PS256`, `PS384`, `PS512`, `ES256`, `ES384`, and `ES512` in addition to the previously supported `RS256` (RFC 7518). Token signature validation now accepts EC-based (`ES*`) keys as well as RSA-based (`RS*`/`PS*`) keys.
+
 ## 4.4.0
 ### Changed
 - Bumped `cryptography` to `>=49.0.0`, `cachetools` to `>=6.2.6`, and `urllib3` to `>=2.6.3` to meet the SDOL-005 12-month component-age requirement. `cachetools` is floored at `6.2.6` (not `7.x`) and `urllib3` at `2.6.3` (not `2.7.0`) to retain Python 3.9 support, as the newer releases require Python `>=3.10`.
